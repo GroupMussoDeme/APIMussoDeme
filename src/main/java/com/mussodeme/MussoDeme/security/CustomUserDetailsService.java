@@ -1,8 +1,8 @@
-package com.phegondev.InventoryManagementSystem.security;
+package com.mussodeme.MussoDeme.security;
 
-import com.phegondev.InventoryManagementSystem.entity.User;
-import com.phegondev.InventoryManagementSystem.exceptions.NotFoundException;
-import com.phegondev.InventoryManagementSystem.repository.UserRepository;
+import com.mussodeme.MussoDeme.entities.Utilisateur;
+import com.mussodeme.MussoDeme.exceptions.NotFoundException;
+import com.mussodeme.MussoDeme.repository.UtilisateursRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,11 +13,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UtilisateursRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username)
+        Utilisateur user = userRepository.findByNumeroTel(username)
                 .orElseThrow(()-> new NotFoundException("User Email Not Found"));
 
         return AuthUser.builder()

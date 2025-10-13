@@ -1,7 +1,7 @@
-package com.phegondev.InventoryManagementSystem.exceptions;
+package com.mussodeme.MussoDeme.exceptions;
 
 
-import com.phegondev.InventoryManagementSystem.dto.Response;
+import com.mussodeme.MussoDeme.dto.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

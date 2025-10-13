@@ -1,4 +1,4 @@
-package com.phegondev.InventoryManagementSystem.dto;
+package com.mussodeme.MussoDeme.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LoginRequest {
 
-    @NotBlank(message = "Email is required")
-    private String email;
-    @NotBlank(message = "Password is required")
-    private String password;
+    @NotBlank(message = "Numero tel is required")
+    private String numeroTel;
+    @NotBlank(message = "Mot cle is required")
+    private String motCle;
 
 }

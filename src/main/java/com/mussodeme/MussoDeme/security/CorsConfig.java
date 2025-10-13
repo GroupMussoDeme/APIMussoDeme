@@ -1,4 +1,4 @@
-package com.phegondev.InventoryManagementSystem.security;
+package com.mussodeme.MussoDeme.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

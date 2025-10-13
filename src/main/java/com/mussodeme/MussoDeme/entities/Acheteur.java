@@ -1,8 +1,12 @@
 package com.mussodeme.MussoDeme.entities;
 
+import com.mussodeme.MussoDeme.entities.Commande;
+import com.mussodeme.MussoDeme.entities.Paiement;
+import com.mussodeme.MussoDeme.entities.RechercherParLocalisation;
+import com.mussodeme.MussoDeme.entities.Utilisateur;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -14,14 +18,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "acheteur")
-
+@DiscriminatorValue("ACHETEUR")
 public class Acheteur extends Utilisateur {
+
     @OneToMany(mappedBy = "acheteur")
     private List<Commande> commandes;
 
     @OneToMany(mappedBy = "acheteur")
-    private List<Paiement>  paiements;
+    private List<Paiement> paiements;
 
     @OneToMany(mappedBy = "acheteur")
     private List<RechercherParLocalisation> rechhercherParLocalisation = new ArrayList<>();

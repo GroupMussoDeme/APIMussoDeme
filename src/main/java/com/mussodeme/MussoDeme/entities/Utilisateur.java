@@ -4,7 +4,6 @@ import com.mussodeme.MussoDeme.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,9 +15,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type_utilisateur", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "utilisateurs")
-
 public abstract class Utilisateur {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,13 +26,13 @@ public abstract class Utilisateur {
     @NotBlank(message = "Le nom est requis")
     private String nom;
 
-    @NotBlank(message = "La localite nom est requis")
+    @NotBlank(message = "La localité est requise")
     private String localite;
 
-    @NotBlank(message = "Le numero de telephone est requis")
+    @NotBlank(message = "Le numéro de téléphone est requis")
     private String numeroTel;
 
-    @NotBlank(message = "Le mot cle est requis")
+    @NotBlank(message = "Le mot clé est requis")
     private String motCle;
 
     @Enumerated(EnumType.STRING)
@@ -54,6 +53,5 @@ public abstract class Utilisateur {
     private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();
 
     @OneToMany(mappedBy = "utilisateur")
-    private List<Historique>  historiques;
-
+    private List<Historique> historiques;
 }

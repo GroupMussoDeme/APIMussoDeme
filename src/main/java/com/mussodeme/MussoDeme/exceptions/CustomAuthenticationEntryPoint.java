@@ -1,7 +1,7 @@
-package com.phegondev.InventoryManagementSystem.exceptions;
+package com.mussodeme.MussoDeme.exceptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.phegondev.InventoryManagementSystem.dto.Response;
+import com.mussodeme.MussoDeme.dto.Response;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

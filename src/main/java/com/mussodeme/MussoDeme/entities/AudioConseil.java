@@ -23,6 +23,7 @@ public class AudioConseil {
     private String langue;
     private String description;
     private String imageUrl;
+    private String urlAudio;
     private String duree;
 
     @ManyToOne
@@ -33,6 +34,6 @@ public class AudioConseil {
     @JoinColumn(name = "id_admin")
     private Admin admin;
 
-    @OneToMany(mappedBy = "audio")
+    @OneToMany(mappedBy = "audioConseil")
     private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();
 }

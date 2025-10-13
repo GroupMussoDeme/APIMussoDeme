@@ -23,6 +23,6 @@ public class UtilisateurAudio {
     private Utilisateur utilisateur;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "id_audio_conseil")
-    private AudioConseil  audioConseil;
+    @JoinColumn(name = "audio_id")
+    private AudioConseil audioConseil;
 }

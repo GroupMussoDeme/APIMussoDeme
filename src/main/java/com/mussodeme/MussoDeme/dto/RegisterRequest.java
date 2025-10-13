@@ -1,6 +1,7 @@
-package com.phegondev.InventoryManagementSystem.dto;
+package com.mussodeme.MussoDeme.dto;
 
-import com.phegondev.InventoryManagementSystem.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mussodeme.MussoDeme.enums.Role;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,15 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-
-    @NotBlank(message = "Name is required")
-    private String name;
-    @NotBlank(message = "Email is required")
-    private String email;
-    @NotBlank(message = "Password is required")
-    private String password;
-    @NotBlank(message = "PhoneNumber is required")
-    private String phoneNumber;
-    private UserRole role;
+    private String nom;
+    private String prenom;
+    private String localite;
+    private String numeroTel;
+    @JsonIgnore
+    private String motCle;
+    private Role role;
 
 }

@@ -26,6 +26,11 @@ public class Categorie {
     @Enumerated(EnumType.STRING)
     private TypeCategorie typeCategorie;
 
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
+
+
     @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL)
     private List<AudioConseil> audioConseils;
 

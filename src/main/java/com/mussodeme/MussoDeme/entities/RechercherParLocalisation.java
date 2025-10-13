@@ -23,6 +23,6 @@ public class RechercherParLocalisation {
     private Acheteur acheteur;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "id_fememes_rurales")
+    @JoinColumn(nullable = false, name = "femme_id")
     private FemmeRurale femmeRurale;
 }

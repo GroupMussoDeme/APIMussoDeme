@@ -1,6 +1,6 @@
-package com.phegondev.InventoryManagementSystem.security;
+package com.mussodeme.MussoDeme.security;
 
-import com.phegondev.InventoryManagementSystem.entity.User;
+import com.mussodeme.MussoDeme.entities.Utilisateur;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class AuthUser implements UserDetails {
 
-    private User user;
+    private Utilisateur user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -23,12 +23,12 @@ public class AuthUser implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return user.getMotCle();
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return user.getNumeroTel();
     }
 
     @Override

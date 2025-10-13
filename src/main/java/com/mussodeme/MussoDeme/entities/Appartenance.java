@@ -18,13 +18,13 @@ public class Appartenance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime date_integration;
+    private LocalDateTime dateIntegration;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "id_coperative")
     private Coperative coperative;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "id_femmes_rurales")
+    @JoinColumn(nullable = false, name = "femme_id")
     private FemmeRurale femmeRurale;
 }
