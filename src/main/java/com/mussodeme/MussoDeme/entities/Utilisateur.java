@@ -1,0 +1,59 @@
+package com.mussodeme.MussoDeme.entities;
+
+import com.mussodeme.MussoDeme.enums.Role;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+@Table(name = "utilisateurs")
+
+public abstract class Utilisateur {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "Le nom est requis")
+    private String nom;
+
+    @NotBlank(message = "La localite nom est requis")
+    private String localite;
+
+    @NotBlank(message = "Le numero de telephone est requis")
+    private String numeroTel;
+
+    @NotBlank(message = "Le mot cle est requis")
+    private String motCle;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    private String action;
+
+    @Column(name = "date_creation", nullable = false, updatable = false)
+    private final LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "utilisateur")
+    private List<Notification> notifications;
+
+    @OneToMany(mappedBy = "utilisateur")
+    private List<GestionAdmin> gestionsAdmin = new ArrayList<>();
+
+    @OneToMany(mappedBy = "utilisateur")
+    private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();
+
+    @OneToMany(mappedBy = "utilisateur")
+    private List<Historique>  historiques;
+
+}
