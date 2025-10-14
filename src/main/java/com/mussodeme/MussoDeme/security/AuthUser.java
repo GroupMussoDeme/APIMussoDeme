@@ -23,17 +23,24 @@ public class AuthUser implements UserDetails {
 
     @Override
     public String getPassword() {
+        if (user instanceof com.mussodeme.MussoDeme.entities.Admin admin) {
+            return admin.getMotDePasse();
+        }
+        // Pour les femmes rurales, motCle n'est pas utilisé par Spring Security pour login standard
         return user.getMotCle();
     }
 
     @Override
     public String getUsername() {
+        if (user instanceof com.mussodeme.MussoDeme.entities.Admin admin) {
+            return admin.getEmail();
+        }
         return user.getNumeroTel();
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return true;
     }
 
     @Override
