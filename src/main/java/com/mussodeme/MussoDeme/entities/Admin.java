@@ -20,10 +20,10 @@ import java.util.List;
 
 public class Admin extends Utilisateur {
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String motDePasse;
 
     @OneToMany(mappedBy = "admin")

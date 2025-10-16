@@ -34,7 +34,7 @@ public abstract class Utilisateur {
     @NotBlank(message = "Le numéro de téléphone est requis")
     private String numeroTel;
 
-    @NotBlank(message = "Le mot clé est requis")
+    @Column(nullable = true)
     private String motCle;
 
     @Enumerated(EnumType.STRING)

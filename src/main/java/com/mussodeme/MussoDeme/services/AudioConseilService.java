@@ -3,84 +3,128 @@ package com.mussodeme.MussoDeme.services;
 import com.mussodeme.MussoDeme.dto.AudioConseilDTO;
 import com.mussodeme.MussoDeme.entities.Admin;
 import com.mussodeme.MussoDeme.entities.AudioConseil;
+import com.mussodeme.MussoDeme.entities.Categorie;
 import com.mussodeme.MussoDeme.exceptions.NotFoundException;
 import com.mussodeme.MussoDeme.repository.AdminRepository;
 import com.mussodeme.MussoDeme.repository.AudioConseilRepository;
 import com.mussodeme.MussoDeme.repository.CategorieRepository;
-import org.springframework.core.io.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AudioConseilService {
 
     private final AudioConseilRepository audioRepo;
-    private final CategorieRepository categorieRepo;
     private final AdminRepository adminRepo;
+    private final CategorieRepository categorieRepo;
 
-    private final Path audioStorage = Paths.get("uploads/audio");
+    private final Path audioStorage = Paths.get("uploads/audios");
 
-    // Upload audio (Admin)
-    public AudioConseil uploadAudio(MultipartFile file, AudioConseilDTO dto) throws IOException {
-        Admin admin = adminRepo.findById(dto.getAdminId())
-                .orElseThrow(() -> new NotFoundException("Admin non trouvé"));
-
-        var categorie = categorieRepo.findById(dto.getCategorieId())
-                .orElseThrow(() -> new NotFoundException("Catégorie non trouvée"));
-
+    // ------------------ UPLOAD ------------------
+    public AudioConseilDTO uploadAudio(MultipartFile file, AudioConseilDTO dto) throws IOException {
+        // Vérifie si le dossier existe sinon crée
         if (!Files.exists(audioStorage)) Files.createDirectories(audioStorage);
 
-        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String filename = StringUtils.cleanPath(file.getOriginalFilename());
         Path targetPath = audioStorage.resolve(filename);
-        Files.write(targetPath, file.getBytes());
+        Files.copy(file.getInputStream(), targetPath);
+
+        Admin admin = adminRepo.findById(dto.getAdminId())
+                .orElseThrow(() -> new NotFoundException("Admin introuvable"));
+
+        Categorie categorie = categorieRepo.findById(dto.getCategorieId())
+                .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
 
         AudioConseil audio = AudioConseil.builder()
                 .titre(dto.getTitre())
                 .langue(dto.getLangue())
                 .description(dto.getDescription())
-                .urlAudio(targetPath.toString())
-                .imageUrl(dto.getImageUrl())
                 .duree(dto.getDuree())
-                .categorie(categorie)
+                .urlAudio(targetPath.toString())
                 .admin(admin)
+                .categorie(categorie)
                 .build();
 
-        return audioRepo.save(audio);
+        AudioConseil saved = audioRepo.save(audio);
+
+        dto.setId(saved.getId());
+        dto.setUrlAudio(saved.getUrlAudio());
+        return dto;
     }
 
-    // Liste tous les audios (FemmeRurale)
+    // ------------------ LIST ------------------
     public List<AudioConseilDTO> listAudios() {
-        return audioRepo.findAll().stream().map(audio -> {
-            AudioConseilDTO dto = new AudioConseilDTO();
-            dto.setId(audio.getId());
-            dto.setTitre(audio.getTitre());
-            dto.setLangue(audio.getLangue());
-            dto.setDescription(audio.getDescription());
-            dto.setDuree(audio.getDuree());
-            dto.setImageUrl(audio.getImageUrl());
-            dto.setUrlAudio(audio.getUrlAudio());
-            dto.setCategorieId(audio.getCategorie().getId());
-            dto.setAdminId(audio.getAdmin().getId());
-            return dto;
-        }).toList();
+        return audioRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    // Télécharger un audio
-    public Resource downloadAudio(Long audioId) throws IOException {
-        AudioConseil audio = audioRepo.findById(audioId)
-                .orElseThrow(() -> new NotFoundException("Audio non trouvé"));
+    // ------------------ GET BY ID ------------------
+    public AudioConseilDTO getAudio(Long id) {
+        AudioConseil audio = audioRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
+        return toDTO(audio);
+    }
+
+    // ------------------ DOWNLOAD ------------------
+    public Resource downloadAudio(Long id) throws MalformedURLException {
+        AudioConseil audio = audioRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
+        return new UrlResource(Paths.get(audio.getUrlAudio()).toUri());
+    }
+
+    // ------------------ UPDATE ------------------
+    public AudioConseilDTO updateAudio(Long id, AudioConseilDTO dto) {
+        AudioConseil audio = audioRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
+
+        audio.setTitre(dto.getTitre());
+        audio.setLangue(dto.getLangue());
+        audio.setDescription(dto.getDescription());
+        audio.setDuree(dto.getDuree());
+
+        // Optionnel : changer la catégorie
+        if (dto.getCategorieId() != null) {
+            Categorie cat = categorieRepo.findById(dto.getCategorieId())
+                    .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
+            audio.setCategorie(cat);
+        }
+
+        AudioConseil updated = audioRepo.save(audio);
+        return toDTO(updated);
+    }
+
+    // ------------------ DELETE ------------------
+    public void deleteAudio(Long id) throws IOException {
+        AudioConseil audio = audioRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
         Path path = Paths.get(audio.getUrlAudio());
-        if (!Files.exists(path)) throw new NotFoundException("Fichier introuvable");
-        return new UrlResource(path.toUri());
+        if (Files.exists(path)) Files.delete(path);
+        audioRepo.delete(audio);
+    }
+
+    // ------------------ Mapper ------------------
+    private AudioConseilDTO toDTO(AudioConseil audio) {
+        AudioConseilDTO dto = new AudioConseilDTO();
+        dto.setId(audio.getId());
+        dto.setTitre(audio.getTitre());
+        dto.setLangue(audio.getLangue());
+        dto.setDescription(audio.getDescription());
+        dto.setDuree(audio.getDuree());
+        dto.setUrlAudio(audio.getUrlAudio());
+        dto.setAdminId(audio.getAdmin().getId());
+        dto.setCategorieId(audio.getCategorie().getId());
+        return dto;
     }
 }
-
