@@ -23,7 +23,6 @@ public class AudioConseilController {
 
     // ------------------ CREATE / UPLOAD ------------------
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Response> upload(@RequestParam("file") MultipartFile file,
                                            @RequestParam Long adminId,
                                            @RequestParam Long categorieId,

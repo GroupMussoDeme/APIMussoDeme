@@ -38,6 +38,10 @@ public class SecurityFilter {
                 )
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/audios/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers("/api/categories")
+                        .hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
