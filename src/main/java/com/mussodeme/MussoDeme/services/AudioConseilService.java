@@ -4,6 +4,7 @@ import com.mussodeme.MussoDeme.dto.AudioConseilDTO;
 import com.mussodeme.MussoDeme.entities.Admin;
 import com.mussodeme.MussoDeme.entities.AudioConseil;
 import com.mussodeme.MussoDeme.entities.Categorie;
+import com.mussodeme.MussoDeme.entities.Utilisateur;
 import com.mussodeme.MussoDeme.exceptions.NotFoundException;
 import com.mussodeme.MussoDeme.repository.AdminRepository;
 import com.mussodeme.MussoDeme.repository.AudioConseilRepository;
@@ -20,6 +21,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,42 +30,47 @@ import java.util.stream.Collectors;
 public class AudioConseilService {
 
     private final AudioConseilRepository audioRepo;
-    private final AdminRepository adminRepo;
+    private final AdminRepository userRepo;
     private final CategorieRepository categorieRepo;
 
     private final Path audioStorage = Paths.get("uploads/audios");
 
-    // ------------------ UPLOAD ------------------
     public AudioConseilDTO uploadAudio(MultipartFile file, AudioConseilDTO dto) throws IOException {
-        // Vérifie si le dossier existe sinon crée
-        if (!Files.exists(audioStorage)) Files.createDirectories(audioStorage);
+        try {
+            if (!Files.exists(audioStorage)) Files.createDirectories(audioStorage);
 
-        String filename = StringUtils.cleanPath(file.getOriginalFilename());
-        Path targetPath = audioStorage.resolve(filename);
-        Files.copy(file.getInputStream(), targetPath);
+            String filename = StringUtils.cleanPath(file.getOriginalFilename());
+            Path targetPath = audioStorage.resolve(filename);
+            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-        Admin admin = adminRepo.findById(dto.getAdminId())
-                .orElseThrow(() -> new NotFoundException("Admin introuvable"));
+            Utilisateur utilisateur = userRepo.findById(dto.getUtilisateurId())
+                    .orElseThrow(() -> new NotFoundException("Utilisateur introuvable"));
 
-        Categorie categorie = categorieRepo.findById(dto.getCategorieId())
-                .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
+            Categorie categorie = categorieRepo.findById(dto.getCategorieId())
+                    .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
 
-        AudioConseil audio = AudioConseil.builder()
-                .titre(dto.getTitre())
-                .langue(dto.getLangue())
-                .description(dto.getDescription())
-                .duree(dto.getDuree())
-                .urlAudio(targetPath.toString())
-                .admin(admin)
-                .categorie(categorie)
-                .build();
+            AudioConseil audio = AudioConseil.builder()
+                    .titre(dto.getTitre())
+                    .langue(dto.getLangue())
+                    .description(dto.getDescription())
+                    .duree(dto.getDuree())
+                    .urlAudio(targetPath.toString())
+                    .utilisateur(utilisateur)
+                    .categorie(categorie)
+                    .build();
 
-        AudioConseil saved = audioRepo.save(audio);
+            AudioConseil saved = audioRepo.save(audio);
 
-        dto.setId(saved.getId());
-        dto.setUrlAudio(saved.getUrlAudio());
-        return dto;
+            dto.setId(saved.getId());
+            dto.setUrlAudio(saved.getUrlAudio());
+            return dto;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de l’upload : " + e.getMessage(), e);
+        }
     }
+
+
 
     // ------------------ LIST ------------------
     public List<AudioConseilDTO> listAudios() {
@@ -123,7 +130,7 @@ public class AudioConseilService {
         dto.setDescription(audio.getDescription());
         dto.setDuree(audio.getDuree());
         dto.setUrlAudio(audio.getUrlAudio());
-        dto.setAdminId(audio.getAdmin().getId());
+        dto.setUtilisateurId(audio.getUtilisateur().getId());
         dto.setCategorieId(audio.getCategorie().getId());
         return dto;
     }

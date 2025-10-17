@@ -24,7 +24,7 @@ public class AudioConseilController {
     // ------------------ CREATE / UPLOAD ------------------
     @PostMapping("/upload")
     public ResponseEntity<Response> upload(@RequestParam("file") MultipartFile file,
-                                           @RequestParam Long adminId,
+                                           @RequestParam Long utilisateurId,
                                            @RequestParam Long categorieId,
                                            @RequestParam String titre,
                                            @RequestParam String langue,
@@ -32,7 +32,7 @@ public class AudioConseilController {
                                            @RequestParam String duree) throws IOException {
 
         AudioConseilDTO dto = new AudioConseilDTO();
-        dto.setAdminId(adminId);
+        dto.setUtilisateurId(utilisateurId);
         dto.setCategorieId(categorieId);
         dto.setTitre(titre);
         dto.setLangue(langue);
@@ -46,6 +46,7 @@ public class AudioConseilController {
                 .message("Audio uploadé avec succès")
                 .build());
     }
+
 
     // ------------------ LIST ------------------
     @GetMapping("/list")

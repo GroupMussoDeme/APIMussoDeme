@@ -29,12 +29,12 @@ public class AudioConseil {
     private String duree;
 
     @ManyToOne
-    @JoinColumn(name = "categorie_id", nullable = false)
+    @JoinColumn(name = "categorie_id")
     private Categorie categorie;
 
     @ManyToOne
-    @JoinColumn(name = "id_admin")
-    private Admin admin;
+    @JoinColumn(name = "utilisateur_id")
+    private Utilisateur utilisateur;
 
     @OneToMany(mappedBy = "audioConseil")
     private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();

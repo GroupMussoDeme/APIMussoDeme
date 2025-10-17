@@ -42,7 +42,7 @@ public class AdminService {
                 .imageUrl(imageUrl)
                 .duree(dto.getDuree())
                 .categorie(categorie)
-                .admin(admin)
+                .utilisateur(admin)
                 .build();
 
         return audioConseilRepository.save(audio);

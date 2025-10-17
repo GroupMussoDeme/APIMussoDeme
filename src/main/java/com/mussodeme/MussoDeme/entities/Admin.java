@@ -26,7 +26,7 @@ public class Admin extends Utilisateur {
     @Column(nullable = true)
     private String motDePasse;
 
-    @OneToMany(mappedBy = "admin")
+    @OneToMany(mappedBy = "utilisateur")
     private List<AudioConseil> audiosConseils;
 
     @OneToMany(mappedBy = "admin")
