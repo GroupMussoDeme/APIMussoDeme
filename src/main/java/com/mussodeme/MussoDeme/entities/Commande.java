@@ -35,8 +35,7 @@ public class Commande {
     @JoinColumn(name = "produit_id", nullable = false)
     private Produit produit;
 
-    @ManyToOne
-    @JoinColumn(nullable = false, name = "id_commande")
-    private Paiement paiement;
+    @OneToMany(mappedBy = "commande", cascade = CascadeType.ALL)
+    private List<Paiement> paiement;
 
 }

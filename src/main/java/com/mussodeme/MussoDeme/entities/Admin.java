@@ -15,15 +15,17 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @SuperBuilder
-@DiscriminatorValue("ADMIN")
+@Table(name = "admin")
 
+public class Admin  {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-public class Admin extends Utilisateur {
-
-    @Column(unique = true, nullable = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String motDePasse;
 
     @OneToMany(mappedBy = "utilisateur")

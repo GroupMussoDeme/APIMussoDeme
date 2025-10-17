@@ -28,6 +28,9 @@ public abstract class Utilisateur {
     @NotBlank(message = "Le nom est requis")
     private String nom;
 
+    @NotBlank(message = "Le prenom est requis")
+    private String prenom;
+
     @NotBlank(message = "La localité est requise")
     private String localite;
 
@@ -40,6 +43,7 @@ public abstract class Utilisateur {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private boolean active;
     private String action;
 
     @Column(name = "date_creation", nullable = false, updatable = false)

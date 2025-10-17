@@ -1,5 +1,7 @@
-package com.mussodeme.MussoDeme.security;
+package com.mussodeme.MussoDeme.security.filter;
 
+import com.mussodeme.MussoDeme.security.service.CustomUserDetailsService;
+import com.mussodeme.MussoDeme.security.util.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.mussodeme.MussoDeme.security;
+package com.mussodeme.MussoDeme.security.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

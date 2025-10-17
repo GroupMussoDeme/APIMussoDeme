@@ -4,7 +4,7 @@ import com.mussodeme.MussoDeme.dto.*;
 import com.mussodeme.MussoDeme.entities.Admin;
 import com.mussodeme.MussoDeme.entities.FemmeRurale;
 import com.mussodeme.MussoDeme.entities.Utilisateur;
-import com.mussodeme.MussoDeme.security.JwtUtils;
+import com.mussodeme.MussoDeme.security.util.JwtUtils;
 import com.mussodeme.MussoDeme.services.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +21,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Response> login(@Valid @RequestBody LoginRequest request) {
-        Utilisateur utilisateur = authService.authenticate(request);
+        Utilisateur utilisateur =  (Utilisateur) authService.authenticate(request);
         Response response;
 
-        if (utilisateur instanceof Admin admin) {
+        if (utilisateur instanceof Admin) {
             UtilisateurDTO dto = new UtilisateurDTO();
             dto.setId(admin.getId());
             dto.setNom(admin.getNom());

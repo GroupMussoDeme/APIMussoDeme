@@ -38,10 +38,10 @@ public class Produit {
     private Double prix;
 
     @ManyToOne
-    @JoinColumn(name = "femme_id")
+    @JoinColumn(name = "femmeRural_id")
     private FemmeRurale femmeRurale;
 
-    @OneToMany(mappedBy = "produit")
+    @OneToMany(mappedBy = "produit", cascade = CascadeType.ALL)
     private List<Commande> commandes;
 
 }

@@ -25,6 +25,6 @@ public class Appartenance {
     private Coperative coperative;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "femme_id")
+    @JoinColumn(nullable = false, name = "femmeRurale_id")
     private FemmeRurale femmeRurale;
 }

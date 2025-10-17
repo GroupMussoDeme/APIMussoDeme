@@ -1,6 +1,7 @@
 package com.mussodeme.MussoDeme.enums;
 
-public enum ModePaiement {
+public enum
+ModePaiement {
     ORANGEMONEY,
     MOOVMONEY,
     ENSEPECE

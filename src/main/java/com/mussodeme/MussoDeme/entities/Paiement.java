@@ -30,8 +30,9 @@ public class Paiement {
 
     private Double montant;
 
-    @OneToMany(mappedBy = "paiement")
-    private List<Commande> commande;
+    @ManyToOne
+    @JoinColumn(name = "id_commande")
+    private Commande commande;
 
     @ManyToOne
     @JoinColumn(name = "id_acheteur")
