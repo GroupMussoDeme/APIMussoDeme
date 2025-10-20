@@ -16,9 +16,7 @@ import lombok.NoArgsConstructor;
 public class InstitutionFinanciereDTO {
     private Long id;
     private String nom;
-    private String localite;
     private String numeroTel;
-    @JsonIgnore
-    private String motCle;
-    private Role role;
+    private String description;
+    private String logoUrl;
 }
