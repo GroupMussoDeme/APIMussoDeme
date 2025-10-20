@@ -28,6 +28,6 @@ public class Historique {
     private LocalDateTime date;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "id_utilisateurs")
-    private Utilisateur utilisateur;
+    @JoinColumn(nullable = false, name = "admin_id")
+    private Admin admin;
 }

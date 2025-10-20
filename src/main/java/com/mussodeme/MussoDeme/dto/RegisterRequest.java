@@ -18,4 +18,5 @@ public class RegisterRequest {
     @NotBlank(message = "Le mot de passe ou mot clé est requis")
     private String secret;       // motDePasse pour Admin, motCle pour FemmeRurale
     private Role role;
+    private boolean active;
 }

@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface FemmeRuraleRepository extends JpaRepository<FemmeRurale, Long> {
     Optional<FemmeRurale> findByNumeroTel(String numeroTel);
+    boolean existsByNumeroTel(String numeroTel);
 }

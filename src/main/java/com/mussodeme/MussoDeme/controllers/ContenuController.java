@@ -1,8 +1,8 @@
 package com.mussodeme.MussoDeme.controllers;
 
-import com.mussodeme.MussoDeme.dto.AudioConseilDTO;
+import com.mussodeme.MussoDeme.dto.ContenuDTO;
 import com.mussodeme.MussoDeme.dto.Response;
-import com.mussodeme.MussoDeme.services.AudioConseilService;
+import com.mussodeme.MussoDeme.services.ContenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -17,9 +17,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/audios")
 @RequiredArgsConstructor
-public class AudioConseilController {
+public class ContenuController {
 
-    private final AudioConseilService audioService;
+    private final ContenuService audioService;
 
     // ------------------ CREATE / UPLOAD ------------------
     @PostMapping("/upload")
@@ -31,8 +31,8 @@ public class AudioConseilController {
                                            @RequestParam String description,
                                            @RequestParam String duree) throws IOException {
 
-        AudioConseilDTO dto = new AudioConseilDTO();
-        dto.setUtilisateurId(utilisateurId);
+        ContenuDTO dto = new ContenuDTO();
+        dto.setAdminId(dto.getAdminId());
         dto.setCategorieId(categorieId);
         dto.setTitre(titre);
         dto.setLangue(langue);
@@ -50,13 +50,13 @@ public class AudioConseilController {
 
     // ------------------ LIST ------------------
     @GetMapping("/list")
-    public ResponseEntity<List<AudioConseilDTO>> list() {
+    public ResponseEntity<List<ContenuDTO>> list() {
         return ResponseEntity.ok(audioService.listAudios());
     }
 
     // ------------------ GET BY ID ------------------
     @GetMapping("/{id}")
-    public ResponseEntity<AudioConseilDTO> get(@PathVariable Long id) {
+    public ResponseEntity<ContenuDTO> get(@PathVariable Long id) {
         return ResponseEntity.ok(audioService.getAudio(id));
     }
 
@@ -72,8 +72,8 @@ public class AudioConseilController {
     // ------------------ UPDATE ------------------
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AudioConseilDTO> update(@PathVariable Long id,
-                                                  @RequestBody AudioConseilDTO dto) {
+    public ResponseEntity<ContenuDTO> update(@PathVariable Long id,
+                                             @RequestBody ContenuDTO dto) {
         return ResponseEntity.ok(audioService.updateAudio(id, dto));
     }
 

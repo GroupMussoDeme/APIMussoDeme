@@ -1,8 +1,6 @@
 package com.mussodeme.MussoDeme.controllers;
 
 import com.mussodeme.MussoDeme.dto.Response;
-import com.mussodeme.MussoDeme.dto.TutoDTO;
-import com.mussodeme.MussoDeme.services.TutoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;

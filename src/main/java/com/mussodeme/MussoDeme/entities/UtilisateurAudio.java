@@ -24,5 +24,5 @@ public class UtilisateurAudio {
 
     @ManyToOne
     @JoinColumn(name = "audio_id")
-    private AudioConseil audioConseil;
+    private Contenu contenu;
 }

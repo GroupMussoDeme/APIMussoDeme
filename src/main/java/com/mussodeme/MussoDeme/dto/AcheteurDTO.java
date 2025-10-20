@@ -20,7 +20,5 @@ public class AcheteurDTO {
     private String prenom;
     private String localite;
     private String numeroTel;
-    @JsonIgnore
-    private String motCle; // à retirer si sensible
     private Role role;
 }

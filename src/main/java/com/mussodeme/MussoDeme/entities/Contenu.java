@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @Table(name = "audioConseil")
 
-public class AudioConseil {
+public class Contenu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,8 +24,7 @@ public class AudioConseil {
     private String titre;
     private String langue;
     private String description;
-    private String imageUrl;
-    private String urlAudio;
+    private String urlContenu;
     private String duree;
 
     @ManyToOne
@@ -33,9 +32,9 @@ public class AudioConseil {
     private Categorie categorie;
 
     @ManyToOne
-    @JoinColumn(name = "utilisateur_id")
-    private Utilisateur utilisateur;
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
 
-    @OneToMany(mappedBy = "audioConseil")
+    @OneToMany(mappedBy = "contenu")
     private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();
 }

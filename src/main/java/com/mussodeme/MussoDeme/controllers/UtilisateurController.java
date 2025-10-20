@@ -1,7 +1,6 @@
 package com.mussodeme.MussoDeme.controllers;
 
-import com.mussodeme.MussoDeme.entities.AudioConseil;
-import com.mussodeme.MussoDeme.entities.Tuto;
+import com.mussodeme.MussoDeme.entities.Contenu;
 import com.mussodeme.MussoDeme.services.UtilisateurService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,7 @@ public class UtilisateurController {
     private final UtilisateurService utilisateurService;
 
     @GetMapping("/audios")
-    public ResponseEntity<List<AudioConseil>> getAudios() {
+    public ResponseEntity<List<Contenu>> getAudios() {
         return ResponseEntity.ok(utilisateurService.getAllAudios());
     }
 
@@ -27,7 +26,7 @@ public class UtilisateurController {
     }
 
     @GetMapping("/audio/{id}")
-    public ResponseEntity<AudioConseil> getAudio(@PathVariable Long id) {
+    public ResponseEntity<Contenu> getAudio(@PathVariable Long id) {
         return ResponseEntity.ok(utilisateurService.getAudioById(id));
     }
 

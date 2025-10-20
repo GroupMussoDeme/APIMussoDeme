@@ -20,7 +20,6 @@ public class Paiement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     private LocalDateTime datePaiement;
 
     @Enumerated(EnumType.STRING)

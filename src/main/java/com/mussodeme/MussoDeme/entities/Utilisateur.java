@@ -2,11 +2,10 @@ package com.mussodeme.MussoDeme.entities;
 
 import com.mussodeme.MussoDeme.enums.Role;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@SuperBuilder
+@Builder
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type_utilisateur", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "utilisateurs")
@@ -25,20 +24,11 @@ public abstract class Utilisateur {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Le nom est requis")
     private String nom;
-
-    @NotBlank(message = "Le prenom est requis")
     private String prenom;
-
-    @NotBlank(message = "La localité est requise")
-    private String localite;
-
-    @NotBlank(message = "Le numéro de téléphone est requis")
     private String numeroTel;
-
-    @Column(nullable = true)
     private String motCle;
+    private String localite;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -57,7 +47,4 @@ public abstract class Utilisateur {
 
     @OneToMany(mappedBy = "utilisateur")
     private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();
-
-    @OneToMany(mappedBy = "utilisateur")
-    private List<Historique> historiques;
 }

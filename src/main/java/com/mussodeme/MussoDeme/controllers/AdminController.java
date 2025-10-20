@@ -1,9 +1,7 @@
 package com.mussodeme.MussoDeme.controllers;
 
-import com.mussodeme.MussoDeme.dto.AudioConseilDTO;
-import com.mussodeme.MussoDeme.dto.TutoDTO;
-import com.mussodeme.MussoDeme.entities.AudioConseil;
-import com.mussodeme.MussoDeme.entities.Tuto;
+import com.mussodeme.MussoDeme.dto.ContenuDTO;
+import com.mussodeme.MussoDeme.entities.Contenu;
 import com.mussodeme.MussoDeme.services.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +17,13 @@ public class AdminController {
 
     // -------------------- Ajouter un audio --------------------
     @PostMapping("/{adminId}/audios")
-    public ResponseEntity<AudioConseil> addAudio(
+    public ResponseEntity<Contenu> addAudio(
             @PathVariable Long adminId,
-            @RequestPart("data") AudioConseilDTO dto,
+            @RequestPart("data") ContenuDTO dto,
             @RequestPart("audioFile") MultipartFile audioFile,
             @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
     ) {
-        AudioConseil audio = adminService.addAudio(adminId, dto, audioFile, imageFile);
+        Contenu audio = adminService.addAudio(adminId, dto, audioFile, imageFile);
         return ResponseEntity.ok(audio);
     }
 

@@ -35,8 +35,8 @@ public class Response {
     private CoperativeDTO coperative;
     private List<CoperativeDTO> coperatives;
 
-    private AudioConseilDTO audioConseil;
-    private List<AudioConseilDTO> audioConseils;
+    private ContenuDTO audioConseil;
+    private List<ContenuDTO> audioConseils;
 
     private ProduitDTO produit;
     private List<ProduitDTO> produits;
@@ -52,9 +52,6 @@ public class Response {
 
     private HistoriqueDTO historique;
     private List<HistoriqueDTO> historiques;
-
-    private TutoDTO tuto;
-    private List<TutoDTO> tutos;
 
     private UtilisateurAudioDTO utilisateurAudio;
     private List<UtilisateurAudioDTO> utilisateurAudios;

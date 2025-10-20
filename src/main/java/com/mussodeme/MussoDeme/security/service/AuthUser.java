@@ -20,32 +20,29 @@ public class AuthUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (admin != null)
+        if (admin != null) {
             return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        return List.of(new SimpleGrantedAuthority("ROLE_" + utilisateur.getRole().name()));
+        }
+        if (utilisateur != null && utilisateur.getRole() != null) {
+            return List.of(new SimpleGrantedAuthority("ROLE_" + utilisateur.getRole().name()));
+        }
+        return List.of();
     }
 
     @Override
     public String getPassword() {
         if (admin != null) return admin.getMotDePasse();
-        return utilisateur.getMotCle();
+        return utilisateur != null ? utilisateur.getMotCle() : null;
     }
 
     @Override
     public String getUsername() {
         if (admin != null) return admin.getEmail();
-        return utilisateur.getNumeroTel();
+        return utilisateur != null ? utilisateur.getNumeroTel() : null;
     }
 
-    @Override
-    public boolean isAccountNonExpired() { return true; }
-
-    @Override
-    public boolean isAccountNonLocked() { return true; }
-
-    @Override
-    public boolean isCredentialsNonExpired() { return true; }
-
-    @Override
-    public boolean isEnabled() { return true; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }

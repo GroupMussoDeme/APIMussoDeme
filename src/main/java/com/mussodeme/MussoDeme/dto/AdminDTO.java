@@ -17,8 +17,6 @@ import lombok.NoArgsConstructor;
 public class AdminDTO {
     private Long id;
     private String nom;
-    private String localite;
-    private String numeroTel;
     private Role role;
     private String email;
     @JsonIgnore

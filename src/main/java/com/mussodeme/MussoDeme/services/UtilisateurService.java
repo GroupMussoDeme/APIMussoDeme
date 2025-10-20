@@ -1,9 +1,7 @@
 package com.mussodeme.MussoDeme.services;
 
-import com.mussodeme.MussoDeme.entities.AudioConseil;
-import com.mussodeme.MussoDeme.entities.Tuto;
-import com.mussodeme.MussoDeme.repository.AudioConseilRepository;
-import com.mussodeme.MussoDeme.repository.TutoRepository;
+import com.mussodeme.MussoDeme.entities.Contenu;
+import com.mussodeme.MussoDeme.repository.ContenuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,24 +11,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UtilisateurService {
 
-    private final AudioConseilRepository audioConseilRepository;
+    private final ContenuRepository contenuRepository;
     private final TutoRepository tutoRepository;
 
-    public List<AudioConseil> getAllAudios() {
-        return audioConseilRepository.findAll();
+    public List<Contenu> getAllAudios() {
+        return contenuRepository.findAll();
     }
 
-    public List<Tuto> getAllTutos() {
-        return tutoRepository.findAll();
-    }
 
-    public AudioConseil getAudioById(Long id) {
-        return audioConseilRepository.findById(id)
+    public Contenu getAudioById(Long id) {
+        return contenuRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Audio non trouvé"));
-    }
-
-    public Tuto getTutoById(Long id) {
-        return tutoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tuto non trouvé"));
     }
 }

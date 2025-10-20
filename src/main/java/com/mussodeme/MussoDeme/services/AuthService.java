@@ -41,7 +41,7 @@ public class AuthService {
 
         if (request.getNumeroTel() != null && !request.getNumeroTel().isEmpty()) {
             // Vérifie si c’est un admin
-            Admin admin = adminRepository.findByNumeroTel(request.getNumeroTel()).orElse(null);
+            Admin admin = adminRepository.findByEmail(request.getNumeroTel()).orElse(null);
             if (admin != null) {
                 if (!passwordEncoder.matches(request.getSecret(), admin.getMotDePasse())) {
                     throw new InvalidCredentialsException("Mot de passe incorrect pour l’administrateur");
@@ -70,13 +70,14 @@ public class AuthService {
         }
 
         else if (request.getRole() == Role.FEMME_RURALE) {
-            FemmeRurale femme = FemmeRurale.builder()
+            FemmeRurale femme = (FemmeRurale) FemmeRurale.builder()
                     .nom(request.getNom())
                     .prenom(request.getPrenom())
                     .localite(request.getLocalite())
                     .numeroTel(request.getNumeroTel())
                     .motCle(request.getSecret())
                     .role(Role.FEMME_RURALE)
+                    .active(request.isActive())
                     .build();
 
             return utilisateursRepository.save(femme);

@@ -17,11 +17,7 @@ import java.util.List;
 @SuperBuilder
 @Data
 @DiscriminatorValue("FEMME_RURALE")
-
 public class FemmeRurale extends Utilisateur {
-
-    @NotBlank(message = "Le Prenom est requis")
-    private String prenom;
 
     @OneToMany(mappedBy = "femmeRurale")
     private List<Produit> produits;

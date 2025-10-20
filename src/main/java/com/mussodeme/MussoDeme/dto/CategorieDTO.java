@@ -14,6 +14,5 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CategorieDTO {
     private Long id;
-    private String titre;
     private TypeCategorie typeCategorie;
 }

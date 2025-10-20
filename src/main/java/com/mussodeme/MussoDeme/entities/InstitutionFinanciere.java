@@ -1,15 +1,26 @@
 package com.mussodeme.MussoDeme.entities;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Builder
-@DiscriminatorValue("INSTITUTION_FINANCIERE")
-public class InstitutionFinanciere extends Utilisateur {
-    public InstitutionFinanciere() {}
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "institution_financiere")
+public class InstitutionFinanciere {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String nom;
+
+    private String numeroTel;
+
+    private String description;
+
+    private String logoUrl;
 }

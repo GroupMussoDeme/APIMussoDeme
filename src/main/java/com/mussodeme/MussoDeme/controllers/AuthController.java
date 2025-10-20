@@ -21,15 +21,14 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Response> login(@Valid @RequestBody LoginRequest request) {
-        Utilisateur utilisateur =  (Utilisateur) authService.authenticate(request);
+        Admin admin =  (Admin) authService.authenticate(request);
         Response response;
 
-        if (utilisateur instanceof Admin) {
+        if (Admin) {
             UtilisateurDTO dto = new UtilisateurDTO();
             dto.setId(admin.getId());
             dto.setNom(admin.getNom());
-            dto.setLocalite(admin.getLocalite());
-            dto.setNumeroTel(admin.getNumeroTel());
+            dto.setPrenom(admin.getPrenom());
             dto.setRole(admin.getRole());
 
             String token = jwtUtils.generateToken(admin.getEmail());

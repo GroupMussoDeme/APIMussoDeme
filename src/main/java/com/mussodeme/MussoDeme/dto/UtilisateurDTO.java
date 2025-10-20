@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class UtilisateurDTO {
     private Long id;
     private String nom;
+    private String prenom;
     private String localite;
     private String numeroTel;
     @JsonIgnore

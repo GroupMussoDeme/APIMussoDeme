@@ -32,6 +32,6 @@ public class Categorie {
 
 
     @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL)
-    private List<AudioConseil> audioConseils;
+    private List<Contenu> contenus;
 
 }
