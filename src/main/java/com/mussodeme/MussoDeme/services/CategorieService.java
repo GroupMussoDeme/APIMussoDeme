@@ -25,7 +25,6 @@ public class CategorieService {
                 .orElseThrow(() -> new NotFoundException("Admin introuvable"));
 
         Categorie cat = Categorie.builder()
-                .titre(dto.getTitre())
                 .typeCategorie(dto.getTypeCategorie())
                 .admin(admin)
                 .build();
@@ -51,7 +50,6 @@ public class CategorieService {
         Categorie cat = categorieRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
 
-        cat.setTitre(dto.getTitre());
         cat.setTypeCategorie(dto.getTypeCategorie());
 
         Categorie updated = categorieRepo.save(cat);
@@ -69,7 +67,6 @@ public class CategorieService {
     private CategorieDTO toDTO(Categorie cat) {
         CategorieDTO dto = new CategorieDTO();
         dto.setId(cat.getId());
-        dto.setTitre(cat.getTitre());
         dto.setTypeCategorie(cat.getTypeCategorie());
         return dto;
     }

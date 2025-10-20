@@ -3,9 +3,9 @@ package com.mussodeme.MussoDeme.entities;
 import com.mussodeme.MussoDeme.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,9 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
+@SuperBuilder
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "type_utilisateur", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "utilisateurs")
 public abstract class Utilisateur {
     @Id
@@ -34,7 +33,6 @@ public abstract class Utilisateur {
     private Role role;
 
     private boolean active;
-    private String action;
 
     @Column(name = "date_creation", nullable = false, updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
@@ -47,4 +45,7 @@ public abstract class Utilisateur {
 
     @OneToMany(mappedBy = "utilisateur")
     private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();
+
+    @OneToMany(mappedBy = "utilisateur")
+    private List<Historique> historiques;
 }

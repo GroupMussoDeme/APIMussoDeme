@@ -1,6 +1,7 @@
 package com.mussodeme.MussoDeme.services;
 
 import com.mussodeme.MussoDeme.dto.ContenuDTO;
+import com.mussodeme.MussoDeme.entities.Admin;
 import com.mussodeme.MussoDeme.entities.Contenu;
 import com.mussodeme.MussoDeme.entities.Categorie;
 import com.mussodeme.MussoDeme.entities.Utilisateur;
@@ -42,7 +43,7 @@ public class ContenuService {
             Path targetPath = audioStorage.resolve(filename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
-            Utilisateur utilisateur = userRepo.findById(dto.getUtilisateurId())
+            Admin admin = userRepo.findById(dto.getAdminId())
                     .orElseThrow(() -> new NotFoundException("Utilisateur introuvable"));
 
             Categorie categorie = categorieRepo.findById(dto.getCategorieId())
@@ -53,15 +54,15 @@ public class ContenuService {
                     .langue(dto.getLangue())
                     .description(dto.getDescription())
                     .duree(dto.getDuree())
-                    .urlAudio(targetPath.toString())
-                    .utilisateur(utilisateur)
+                    .urlContenu(targetPath.toString())
+                    .admin(new Admin())
                     .categorie(categorie)
                     .build();
 
             Contenu saved = audioRepo.save(audio);
 
             dto.setId(saved.getId());
-            dto.setUrlAudio(saved.getUrlAudio());
+            dto.setUrlContenu(saved.getUrlContenu());
             return dto;
 
         } catch (Exception e) {
@@ -87,7 +88,7 @@ public class ContenuService {
     public Resource downloadAudio(Long id) throws MalformedURLException {
         Contenu audio = audioRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Audio introuvable"));
-        return new UrlResource(Paths.get(audio.getUrlAudio()).toUri());
+        return new UrlResource(Paths.get(audio.getUrlContenu()).toUri());
     }
 
     // ------------------ UPDATE ------------------
@@ -115,7 +116,7 @@ public class ContenuService {
     public void deleteAudio(Long id) throws IOException {
         Contenu audio = audioRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Audio introuvable"));
-        Path path = Paths.get(audio.getUrlAudio());
+        Path path = Paths.get(audio.getUrlContenu());
         if (Files.exists(path)) Files.delete(path);
         audioRepo.delete(audio);
     }
@@ -128,8 +129,8 @@ public class ContenuService {
         dto.setLangue(audio.getLangue());
         dto.setDescription(audio.getDescription());
         dto.setDuree(audio.getDuree());
-        dto.setUrlAudio(audio.getUrlAudio());
-        dto.setUtilisateurId(audio.getUtilisateur().getId());
+        dto.setUrlContenu(audio.getUrlContenu());
+        dto.setAdminId(audio.getAdmin().getId());
         dto.setCategorieId(audio.getCategorie().getId());
         return dto;
     }

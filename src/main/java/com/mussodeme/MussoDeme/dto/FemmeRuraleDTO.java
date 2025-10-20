@@ -22,4 +22,5 @@ public class FemmeRuraleDTO {
     @JsonIgnore
     private String motCle;
     private Role role;
+    private boolean active;
 }

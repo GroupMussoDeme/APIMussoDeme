@@ -1,6 +1,5 @@
 package com.mussodeme.MussoDeme.dto;
 
-import com.mussodeme.MussoDeme.enums.Role;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,13 +9,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
+
+    @NotBlank(message = "Le nom est obligatoire")
     private String nom;
-    private String prenom;       // utilisé uniquement pour FemmeRurale
+
+    private String prenom;
+
+    @NotBlank(message = "La localité est obligatoire")
     private String localite;
+
+    @NotBlank(message = "Le numéro de téléphone est obligatoire")
     private String numeroTel;
-    private String email;        // utilisé uniquement pour Admin
-    @NotBlank(message = "Le mot de passe ou mot clé est requis")
-    private String secret;       // motDePasse pour Admin, motCle pour FemmeRurale
-    private Role role;
+
+    @NotBlank(message = "Le mot clé est obligatoire")
+    private String motCle;
+
     private boolean active;
 }

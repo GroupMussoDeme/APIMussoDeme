@@ -27,16 +27,6 @@ public class AdminController {
         return ResponseEntity.ok(audio);
     }
 
-    // -------------------- Ajouter un tuto --------------------
-    @PostMapping("/{adminId}/tutos")
-    public ResponseEntity<Tuto> addTuto(
-            @PathVariable Long adminId,
-            @RequestPart("data") TutoDTO dto,
-            @RequestPart("videoFile") MultipartFile videoFile
-    ) {
-        Tuto tuto = adminService.addTuto(adminId, dto, videoFile);
-        return ResponseEntity.ok(tuto);
-    }
 
     // -------------------- Supprimer un audio --------------------
     @DeleteMapping("/audios/{id}")
@@ -45,10 +35,4 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // -------------------- Supprimer un tuto --------------------
-    @DeleteMapping("/tutos/{id}")
-    public ResponseEntity<Void> deleteTuto(@PathVariable Long id) {
-        adminService.deleteTuto(id);
-        return ResponseEntity.noContent().build();
-    }
 }

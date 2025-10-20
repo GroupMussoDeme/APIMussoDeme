@@ -1,91 +1,105 @@
 package com.mussodeme.MussoDeme.services;
 
+import com.mussodeme.MussoDeme.dto.FemmeRuraleDTO;
 import com.mussodeme.MussoDeme.dto.LoginRequest;
+import com.mussodeme.MussoDeme.dto.LoginResponse;
 import com.mussodeme.MussoDeme.dto.RegisterRequest;
-import com.mussodeme.MussoDeme.entities.Admin;
 import com.mussodeme.MussoDeme.entities.FemmeRurale;
-import com.mussodeme.MussoDeme.entities.Utilisateur;
 import com.mussodeme.MussoDeme.enums.Role;
-import com.mussodeme.MussoDeme.exceptions.InvalidCredentialsException;
 import com.mussodeme.MussoDeme.repository.AdminRepository;
 import com.mussodeme.MussoDeme.repository.FemmeRuraleRepository;
-import com.mussodeme.MussoDeme.repository.UtilisateursRepository;
 import com.mussodeme.MussoDeme.security.util.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final AdminRepository adminRepository;
     private final FemmeRuraleRepository femmeRuraleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final UtilisateursRepository utilisateursRepository;
 
-    // ------------------ AUTHENTIFICATION ------------------
-    public Object authenticate(LoginRequest request) {
+    /**
+     * Connexion (Admin par email / Femme Rurale par numéro)
+     */
+    public LoginResponse login(LoginRequest request) {
+        String identifiant = request.getIdentifiant();
+        String motDePasse = request.getMotDePasse();
 
-        // 🟢 Si c’est un admin (email ou numéro)
-        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
-            Admin admin = adminRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new InvalidCredentialsException("Email ou mot de passe incorrect"));
-
-            if (!passwordEncoder.matches(request.getSecret(), admin.getMotDePasse())) {
-                throw new InvalidCredentialsException("Email ou mot de passe incorrect");
-            }
-            return admin;
+        if (identifiant == null || motDePasse == null) {
+            throw new BadCredentialsException("Identifiant ou mot de passe manquant !");
         }
 
-        if (request.getNumeroTel() != null && !request.getNumeroTel().isEmpty()) {
-            // Vérifie si c’est un admin
-            Admin admin = adminRepository.findByEmail(request.getNumeroTel()).orElse(null);
-            if (admin != null) {
-                if (!passwordEncoder.matches(request.getSecret(), admin.getMotDePasse())) {
-                    throw new InvalidCredentialsException("Mot de passe incorrect pour l’administrateur");
-                }
-                return admin;
+        boolean isEmail = identifiant.contains("@");
+
+        if (isEmail) {
+            //Connexion admin
+            var admin = adminRepository.findByEmail(identifiant)
+                    .orElseThrow(() -> new BadCredentialsException("Email ou mot de passe invalide"));
+
+            if (!passwordEncoder.matches(motDePasse, admin.getMotDePasse())) {
+                throw new BadCredentialsException("Mot de passe incorrect");
             }
 
-            // Sinon, c’est une femme rurale
-            FemmeRurale femme = femmeRuraleRepository.findByNumeroTel(request.getNumeroTel())
-                    .orElseThrow(() -> new InvalidCredentialsException("Numéro ou mot clé incorrect"));
-
-            if (!femme.getMotCle().equals(request.getSecret())) {
-                throw new InvalidCredentialsException("Numéro ou mot clé incorrect");
-            }
-
-            return femme;
-        }
-
-        throw new InvalidCredentialsException("Email ou numéro requis pour la connexion");
-    }
-
-    public Utilisateur register(RegisterRequest request) {
-
-        if (request.getRole() == Role.ADMIN) {
-            throw new InvalidCredentialsException("L'administrateur est déjà configuré. Impossible de créer un nouvel admin.");
-        }
-
-        else if (request.getRole() == Role.FEMME_RURALE) {
-            FemmeRurale femme = (FemmeRurale) FemmeRurale.builder()
-                    .nom(request.getNom())
-                    .prenom(request.getPrenom())
-                    .localite(request.getLocalite())
-                    .numeroTel(request.getNumeroTel())
-                    .motCle(request.getSecret())
-                    .role(Role.FEMME_RURALE)
-                    .active(request.isActive())
+            String token = jwtUtils.generateToken(admin.getEmail());
+            return LoginResponse.builder()
+                    .token(token)
+                    .username(admin.getEmail())
+                    .role("ROLE_ADMIN")
                     .build();
 
-            return utilisateursRepository.save(femme);
-        }
+        } else {
+            //Connexion femme rurale
+            var femme = femmeRuraleRepository.findByNumeroTel(identifiant)
+                    .orElseThrow(() -> new BadCredentialsException("Numéro ou mot clé invalide"));
 
-        else {
-            throw new InvalidCredentialsException("Rôle non supporté pour l'inscription");
+            if (!passwordEncoder.matches(motDePasse, femme.getMotCle())) {
+                throw new BadCredentialsException("Mot clé incorrect");
+            }
+
+            String token = jwtUtils.generateToken(femme.getNumeroTel());
+            return LoginResponse.builder()
+                    .token(token)
+                    .username(femme.getNumeroTel())
+                    .role("ROLE_FEMME_RURALE")
+                    .build();
         }
     }
 
+    /**
+     * Inscription Femme Rurale
+     */
+    public FemmeRuraleDTO registerFemmeRurale(RegisterRequest request) {
+        if (femmeRuraleRepository.existsByNumeroTel(request.getNumeroTel())) {
+            throw new RuntimeException("Ce numéro est déjà utilisé !");
+        }
+
+        FemmeRurale femme = new FemmeRurale();
+        femme.setNom(request.getNom());
+        femme.setPrenom(request.getPrenom());
+        femme.setNumeroTel(request.getNumeroTel());
+        femme.setLocalite(request.getLocalite());
+        femme.setMotCle(passwordEncoder.encode(request.getMotCle()));
+        femme.setRole(Role.FEMME_RURALE);
+        femme.setActive(true);
+
+        FemmeRurale saved = femmeRuraleRepository.save(femme);
+
+        return new FemmeRuraleDTO(
+                saved.getId(),
+                saved.getNom(),
+                saved.getPrenom(),
+                saved.getLocalite(),
+                saved.getNumeroTel(),
+                saved.getMotCle(),
+                saved.getRole(),
+                saved.isActive()
+        );
+    }
 }

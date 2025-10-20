@@ -23,7 +23,6 @@ public class Admin  {
     private Long id;
 
     private String nom;
-    private String prenom;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -41,9 +40,6 @@ public class Admin  {
 
     @OneToMany(mappedBy = "admin")
     private List<Categorie> categories;
-
-    @OneToMany(mappedBy = "admin")
-    private List<Historique> historiques;
 
     @OneToMany(mappedBy = "admin")
     private List<GestionAdmin> gestionsAdmin = new ArrayList<>();

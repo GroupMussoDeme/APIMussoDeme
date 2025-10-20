@@ -12,7 +12,6 @@ import java.util.List;
 public class UtilisateurService {
 
     private final ContenuRepository contenuRepository;
-    private final TutoRepository tutoRepository;
 
     public List<Contenu> getAllAudios() {
         return contenuRepository.findAll();

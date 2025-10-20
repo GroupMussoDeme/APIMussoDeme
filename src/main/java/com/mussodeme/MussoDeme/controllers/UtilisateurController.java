@@ -20,18 +20,10 @@ public class UtilisateurController {
         return ResponseEntity.ok(utilisateurService.getAllAudios());
     }
 
-    @GetMapping("/tutos")
-    public ResponseEntity<List<Tuto>> getTutos() {
-        return ResponseEntity.ok(utilisateurService.getAllTutos());
-    }
 
     @GetMapping("/audio/{id}")
     public ResponseEntity<Contenu> getAudio(@PathVariable Long id) {
         return ResponseEntity.ok(utilisateurService.getAudioById(id));
     }
 
-    @GetMapping("/tuto/{id}")
-    public ResponseEntity<Tuto> getTuto(@PathVariable Long id) {
-        return ResponseEntity.ok(utilisateurService.getTutoById(id));
-    }
 }

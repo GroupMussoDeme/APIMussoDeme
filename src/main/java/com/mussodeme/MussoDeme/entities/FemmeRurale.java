@@ -16,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 @SuperBuilder
 @Data
-@DiscriminatorValue("FEMME_RURALE")
 public class FemmeRurale extends Utilisateur {
 
     @OneToMany(mappedBy = "femmeRurale")
