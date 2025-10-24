@@ -1,10 +1,65 @@
-HELP.md
+# ============================================
+# MUSSODEME API - GITIGNORE
+# ============================================
+
+# ============================================
+# FICHIERS SENSIBLES - NE JAMAIS COMMITER!
+# ============================================
+.env
+.env.local
+.env.production
+*.env
+
+# Fichiers de configuration avec données sensibles
+application-local.properties
+application-prod.properties
+
+# ============================================
+# MAVEN
+# ============================================
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
 
-### STS ###
+# ============================================
+# JAVA / SPRING BOOT
+# ============================================
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# ============================================
+# INTELLIJ IDEA
+# ============================================
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# ============================================
+# ECLIPSE
+# ============================================
 .apt_generated
 .classpath
 .factorypath
@@ -12,23 +67,59 @@ target/
 .settings
 .springBeans
 .sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-.env
-
-### NetBeans ###
+# ============================================
+# NETBEANS
+# ============================================
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# ============================================
+# VS CODE
+# ============================================
 .vscode/
+*.code-workspace
+
+# ============================================
+# MAC OS
+# ============================================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ============================================
+# WINDOWS
+# ============================================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# ============================================
+# LOGS
+# ============================================
+logs/
+*.log
+*.log.*
+
+# ============================================
+# FICHIERS TEMPORAIRES
+# ============================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ============================================
+# UPLOADS / FICHIERS UTILISATEURS
+# ============================================
+uploads/
+temp-uploads/

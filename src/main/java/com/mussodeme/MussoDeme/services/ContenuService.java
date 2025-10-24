@@ -9,7 +9,6 @@ import com.mussodeme.MussoDeme.exceptions.NotFoundException;
 import com.mussodeme.MussoDeme.repository.AdminRepository;
 import com.mussodeme.MussoDeme.repository.ContenuRepository;
 import com.mussodeme.MussoDeme.repository.CategorieRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ContenuService {
 
     private final ContenuRepository audioRepo;
@@ -34,6 +32,13 @@ public class ContenuService {
     private final CategorieRepository categorieRepo;
 
     private final Path audioStorage = Paths.get("uploads/audios");
+
+    // Constructor for dependency injection
+    public ContenuService(ContenuRepository audioRepo, AdminRepository userRepo, CategorieRepository categorieRepo) {
+        this.audioRepo = audioRepo;
+        this.userRepo = userRepo;
+        this.categorieRepo = categorieRepo;
+    }
 
     public ContenuDTO uploadAudio(MultipartFile file, ContenuDTO dto) throws IOException {
         try {
@@ -49,15 +54,16 @@ public class ContenuService {
             Categorie categorie = categorieRepo.findById(dto.getCategorieId())
                     .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
 
-            Contenu audio = Contenu.builder()
-                    .titre(dto.getTitre())
-                    .langue(dto.getLangue())
-                    .description(dto.getDescription())
-                    .duree(dto.getDuree())
-                    .urlContenu(targetPath.toString())
-                    .admin(new Admin())
-                    .categorie(categorie)
-                    .build();
+            Contenu audio = new Contenu();
+            audio.setTitre(dto.getTitre());
+            audio.setLangue(dto.getLangue());
+            audio.setDescription(dto.getDescription());
+            audio.setDuree(dto.getDuree());
+            audio.setUrlContenu(targetPath.toString());
+            
+            Admin adminInstance = new Admin();
+            audio.setAdmin(adminInstance);
+            audio.setCategorie(categorie);
 
             Contenu saved = audioRepo.save(audio);
 
@@ -69,8 +75,6 @@ public class ContenuService {
             throw new RuntimeException("Erreur lors de l’upload : " + e.getMessage(), e);
         }
     }
-
-
 
     // ------------------ LIST ------------------
     public List<ContenuDTO> listAudios() {

@@ -3,8 +3,6 @@ package com.mussodeme.MussoDeme.security.config;
 import com.mussodeme.MussoDeme.exceptions.CustomAccessDeniedHandler;
 import com.mussodeme.MussoDeme.exceptions.CustomAuthenticationEntryPoint;
 import com.mussodeme.MussoDeme.security.filter.AuthFilter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,16 +22,26 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
-@Slf4j
 public class SecurityConfig {
+    private static final Logger logger = Logger.getLogger(SecurityConfig.class.getName());
+    
     private final AuthFilter authFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    // Constructor for dependency injection
+    public SecurityConfig(AuthFilter authFilter, 
+                         CustomAuthenticationEntryPoint customAuthenticationEntryPoint, 
+                         CustomAccessDeniedHandler customAccessDeniedHandler) {
+        this.authFilter = authFilter;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
@@ -59,6 +67,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+    
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -108,10 +117,4 @@ public class SecurityConfig {
 
         return source;
     }
-
-
-
-
-
-
 }

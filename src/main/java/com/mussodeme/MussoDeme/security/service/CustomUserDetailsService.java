@@ -8,28 +8,36 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final AdminRepository adminRepository;
     private final FemmeRuraleRepository femmeRuraleRepository;
 
+    // Constructor for dependency injection
+    public CustomUserDetailsService(AdminRepository adminRepository, FemmeRuraleRepository femmeRuraleRepository) {
+        this.adminRepository = adminRepository;
+        this.femmeRuraleRepository = femmeRuraleRepository;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
 
-        // 🟡 Recherche d’un admin par email
+        // Recherche d’un admin par email
         Admin admin = adminRepository.findByEmail(identifier).orElse(null);
         if (admin != null) {
-            return AuthUser.builder().admin(admin).build();
+            AuthUser authUser = new AuthUser();
+            authUser.setAdmin(admin);
+            return authUser;
         }
 
-        // 🟢 Sinon, recherche d’une femme rurale par numéro
+        // Sinon, recherche d’une femme rurale par numéro
         FemmeRurale femme = femmeRuraleRepository.findByNumeroTel(identifier).orElse(null);
         if (femme != null) {
-            return AuthUser.builder().utilisateur(femme).build();
+            AuthUser authUser = new AuthUser();
+            authUser.setUtilisateur(femme);
+            return authUser;
         }
 
         throw new UsernameNotFoundException("Utilisateur non trouvé : " + identifier);

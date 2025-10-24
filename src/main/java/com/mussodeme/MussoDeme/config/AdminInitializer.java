@@ -4,55 +4,66 @@ import com.mussodeme.MussoDeme.entities.Admin;
 import com.mussodeme.MussoDeme.enums.Role;
 import com.mussodeme.MussoDeme.repository.AdminRepository;
 import jakarta.annotation.PostConstruct;
-import io.github.cdimascio.dotenv.Dotenv;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.logging.Logger;
 
 @Component
 public class AdminInitializer {
 
-    @Autowired
-    private AdminRepository adminRepository;
+    private static final Logger logger = Logger.getLogger(AdminInitializer.class.getName());
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    private final Dotenv dotenv;
+    @Value("${app.admin.email}")
+    private String adminEmail;
 
-    // Constructeur
-    public AdminInitializer() {
-        // Chargement du fichier .env à la racine du projet
-        this.dotenv = Dotenv.configure()
-                .directory(System.getProperty("user.dir"))
-                .ignoreIfMissing()
-                .load();
+    @Value("${app.admin.password}")
+    private String adminPassword;
+
+    @Value("${app.admin.nom}")
+    private String adminNom;
+
+    // Constructor for dependency injection
+    public AdminInitializer(AdminRepository adminRepository, PasswordEncoder passwordEncoder) {
+        this.adminRepository = adminRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
     public void init() {
-        String email = dotenv.get("APP_ADMIN_EMAIL");
-        String password = dotenv.get("APP_ADMIN_PASSWORD");
-
-        if (email == null || password == null) {
-            System.err.println("❌ Variables APP_ADMIN_EMAIL ou APP_ADMIN_PASSWORD manquantes dans le fichier .env");
+        logger.info(" Vérification de l'administrateur par défaut...");
+        
+        // Validation des variables
+        if (adminEmail == null || adminEmail.isBlank()) {
+            logger.severe(" Variable app.admin.email manquante ou vide");
+            return;
+        }
+        
+        if (adminPassword == null || adminPassword.isBlank()) {
+            logger.severe(" Variable app.admin.password manquante ou vide");
             return;
         }
 
-        boolean exists = adminRepository.findByEmail(email).isPresent();
+        // Vérifier si l'admin existe déjà
+        boolean exists = adminRepository.findByEmail(adminEmail).isPresent();
+        
         if (!exists) {
-            Admin admin = Admin.builder()
-                    .nom("Administrateur")
-                    .email(email)
-                    .motDePasse(passwordEncoder.encode(password))
-                    .role(Role.ADMIN)
-                    .active(true)
-                    .build();
+            Admin admin = new Admin();
+            admin.setNom(adminNom);
+            admin.setEmail(adminEmail);
+            admin.setMotDePasse(passwordEncoder.encode(adminPassword));
+            admin.setRole(Role.ADMIN);
+            admin.setActive(true);
 
             adminRepository.save(admin);
-            System.out.println("✅ Administrateur créé avec succès : " + email);
+            logger.info(" Administrateur créé avec succès : " + adminEmail);
+            logger.warning(" IMPORTANT: Changez le mot de passe par défaut pour la sécurité!");
         } else {
-            System.out.println("ℹ️ Un administrateur existe déjà : " + email);
+            logger.info(" Un administrateur existe déjà : " + adminEmail);
         }
     }
 }

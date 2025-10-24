@@ -3,7 +3,6 @@ package com.mussodeme.MussoDeme.controllers;
 import com.mussodeme.MussoDeme.dto.ContenuDTO;
 import com.mussodeme.MussoDeme.dto.Response;
 import com.mussodeme.MussoDeme.services.ContenuService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +15,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/audios")
-@RequiredArgsConstructor
 public class ContenuController {
 
     private final ContenuService audioService;
+
+    // Constructor for dependency injection
+    public ContenuController(ContenuService audioService) {
+        this.audioService = audioService;
+    }
 
     // ------------------ CREATE / UPLOAD ------------------
     @PostMapping("/upload")

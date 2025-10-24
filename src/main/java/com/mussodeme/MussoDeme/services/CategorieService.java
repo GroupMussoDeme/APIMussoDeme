@@ -6,28 +6,31 @@ import com.mussodeme.MussoDeme.entities.Categorie;
 import com.mussodeme.MussoDeme.exceptions.NotFoundException;
 import com.mussodeme.MussoDeme.repository.AdminRepository;
 import com.mussodeme.MussoDeme.repository.CategorieRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class CategorieService {
 
     private final CategorieRepository categorieRepo;
     private final AdminRepository adminRepo;
+
+    // Constructor for dependency injection
+    public CategorieService(CategorieRepository categorieRepo, AdminRepository adminRepo) {
+        this.categorieRepo = categorieRepo;
+        this.adminRepo = adminRepo;
+    }
 
     // ------------------ CREATE ------------------
     public CategorieDTO createCategorie(Long adminId, CategorieDTO dto) {
         Admin admin = adminRepo.findById(adminId)
                 .orElseThrow(() -> new NotFoundException("Admin introuvable"));
 
-        Categorie cat = Categorie.builder()
-                .typeCategorie(dto.getTypeCategorie())
-                .admin(admin)
-                .build();
+        Categorie cat = new Categorie();
+        cat.setTypeCategorie(dto.getTypeCategorie());
+        cat.setAdmin(admin);
 
         Categorie saved = categorieRepo.save(cat);
         return toDTO(saved);

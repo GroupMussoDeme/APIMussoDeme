@@ -1,7 +1,6 @@
 package com.mussodeme.MussoDeme.controllers;
 
 import com.mussodeme.MussoDeme.services.FileStorageService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +9,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/files")
-@RequiredArgsConstructor
 public class FileController {
 
     private final FileStorageService fileStorageService;
+
+    // Constructor for dependency injection
+    public FileController(FileStorageService fileStorageService) {
+        this.fileStorageService = fileStorageService;
+    }
 
     // -------------------- Upload d’un audio --------------------
     @PostMapping("/upload/audio")
