@@ -363,12 +363,6 @@ Les contributions sont les bienvenues!
 
 ---
 
-##  License
-
-Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
----
-
 ##  Équipe
 
 - **Backend Development** - Équipe MussoDeme
@@ -395,29 +389,10 @@ Pour toute question ou problème:
 -  Logging & validation
 -  Documentation complète
 
-### **Prochaines Versions**
-- [ ] API REST documentation (Swagger/OpenAPI)
-- [ ] Rate limiting
-- [ ] Cache Redis
-- [ ] Notifications push
-- [ ] Tests unitaires complets
-- [ ] CI/CD Pipeline
-- [ ] Docker & Kubernetes
-- [ ] Monitoring & métriques
 
 ---
 
 **Fait pour les Femmes Rurales**
-
----
-
-## Statistiques du Projet
-
-- **Lignes de Code:** ~5000+
-- **Endpoints:** 20+
-- **Entités:** 15+
-- **Tests:** En cours
-- **Documentation:** 2000+ lignes
 
 ---
 
