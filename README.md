@@ -351,32 +351,11 @@ docker run -p 5500:5500 --env-file .env mussodeme-api
 
 ---
 
-##  Contribution
-
-Les contributions sont les bienvenues!
-
-1. Fork le projet
-2. Créez votre branche (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
----
-
 ##  Équipe
 
 - **Backend Development** - Équipe MussoDeme
 - **Architecture** - Équipe MussoDeme
 - **Documentation** - Équipe MussoDeme
-
----
-
-##  Support
-
-Pour toute question ou problème:
--  Email: support@mussodeme.com
--  Documentation: Voir les fichiers MD dans le projet
--  Issues: [GitHub Issues](https://github.com/votre-org/mussodemeapi/issues)
 
 ---
 
