@@ -2,20 +2,19 @@ package com.mussodeme.MussoDeme.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.mussodeme.MussoDeme.enums.TypeCategorie;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CategorieDTO {
     private Long id;
-    private TypeCategorie typeCategorie;
+    private String typeCategorie;
 
     // Default constructor
     public CategorieDTO() {
     }
 
     // Constructor with all fields
-    public CategorieDTO(Long id, TypeCategorie typeCategorie) {
+    public CategorieDTO(Long id, String typeCategorie) {
         this.id = id;
         this.typeCategorie = typeCategorie;
     }
@@ -29,11 +28,11 @@ public class CategorieDTO {
         this.id = id;
     }
 
-    public TypeCategorie getTypeCategorie() {
+    public String getTypeCategorie() {
         return typeCategorie;
     }
 
-    public void setTypeCategorie(TypeCategorie typeCategorie) {
+    public void setTypeCategorie(String typeCategorie) {
         this.typeCategorie = typeCategorie;
     }
 
@@ -55,7 +54,7 @@ public class CategorieDTO {
     public String toString() {
         return "CategorieDTO{" +
                 "id=" + id +
-                ", typeCategorie=" + typeCategorie +
+                ", typeCategorie='" + typeCategorie + '\'' +
                 '}';
     }
 }

@@ -1,6 +1,7 @@
 package com.mussodeme.MussoDeme.entities;
 
 import com.mussodeme.MussoDeme.enums.TypeInfo;
+import com.mussodeme.MussoDeme.enums.TypeCategorie;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ public class Contenu {
     private Long id;
 
     private String titre;
-    private String langue;
     private String description;
     private String urlContenu;
     private String duree;
@@ -23,9 +23,9 @@ public class Contenu {
     @Column(name = "type_info")
     private TypeInfo typeInfo;
 
-    @ManyToOne
-    @JoinColumn(name = "categorie_id")
-    private Categorie categorie;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categorie")
+    private TypeCategorie categorie;
 
     @ManyToOne
     @JoinColumn(name = "admin_id")
@@ -40,11 +40,10 @@ public class Contenu {
     }
 
     // Constructor with all fields
-    public Contenu(Long id, String titre, String langue, String description, String urlContenu, String duree, 
-                  TypeInfo typeInfo, Categorie categorie, Admin admin, List<UtilisateurAudio> utilisateurAudio) {
+    public Contenu(Long id, String titre, String description, String urlContenu, String duree, 
+                  TypeInfo typeInfo, TypeCategorie categorie, Admin admin, List<UtilisateurAudio> utilisateurAudio) {
         this.id = id;
         this.titre = titre;
-        this.langue = langue;
         this.description = description;
         this.urlContenu = urlContenu;
         this.duree = duree;
@@ -69,14 +68,6 @@ public class Contenu {
 
     public void setTitre(String titre) {
         this.titre = titre;
-    }
-
-    public String getLangue() {
-        return langue;
-    }
-
-    public void setLangue(String langue) {
-        this.langue = langue;
     }
 
     public String getDescription() {
@@ -116,11 +107,11 @@ public class Contenu {
         return typeInfo;
     }
 
-    public Categorie getCategorie() {
+    public TypeCategorie getCategorie() {
         return categorie;
     }
 
-    public void setCategorie(Categorie categorie) {
+    public void setCategorie(TypeCategorie categorie) {
         this.categorie = categorie;
     }
 
@@ -159,7 +150,6 @@ public class Contenu {
         return "Contenu{" +
                 "id=" + id +
                 ", titre='" + titre + '\'' +
-                ", langue='" + langue + '\'' +
                 ", description='" + description + '\'' +
                 ", urlContenu='" + urlContenu + '\'' +
                 ", duree='" + duree + '\'' +

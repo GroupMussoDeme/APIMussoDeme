@@ -3,36 +3,49 @@ package com.mussodeme.MussoDeme.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.mussodeme.MussoDeme.enums.TypeInfo;
+import com.mussodeme.MussoDeme.dto.CategorieDTO;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContenuDTO {
     private Long id;
     private String titre;
-    private String langue;
     private String description;
     private String urlContenu;
     private String duree;
     private TypeInfo typeInfo;
 
     private Long adminId;
-    private Long categorieId;
+    private String typeCategorie;
 
     // Default constructor
     public ContenuDTO() {
     }
 
     // Constructor with all fields
-    public ContenuDTO(Long id, String titre, String langue, String description, 
-                      String urlContenu, String duree, Long adminId, Long categorieId) {
+    public ContenuDTO(Long id, String titre, String description, 
+                      String urlContenu, String duree, TypeInfo typeInfo,
+                      Long adminId, String typeCategorie) {
         this.id = id;
         this.titre = titre;
-        this.langue = langue;
+        this.description = description;
+        this.urlContenu = urlContenu;
+        this.duree = duree;
+        this.typeInfo = typeInfo;
+        this.adminId = adminId;
+        this.typeCategorie = typeCategorie;
+    }
+    
+    // Ancien constructeur pour compatibilité avec AdminService
+    public ContenuDTO(Long id, String titre, String description, 
+                      String urlContenu, String duree, Long adminId, String typeCategorie) {
+        this.id = id;
+        this.titre = titre;
         this.description = description;
         this.urlContenu = urlContenu;
         this.duree = duree;
         this.adminId = adminId;
-        this.categorieId = categorieId;
+        this.typeCategorie = typeCategorie;
     }
 
     // Getters and Setters
@@ -50,14 +63,6 @@ public class ContenuDTO {
 
     public void setTitre(String titre) {
         this.titre = titre;
-    }
-
-    public String getLangue() {
-        return langue;
-    }
-
-    public void setLangue(String langue) {
-        this.langue = langue;
     }
 
     public String getDescription() {
@@ -100,12 +105,14 @@ public class ContenuDTO {
         this.adminId = adminId;
     }
 
-    public Long getCategorieId() {
-        return categorieId;
+    
+
+    public String getTypeCategorie() {
+        return typeCategorie;
     }
 
-    public void setCategorieId(Long categorieId) {
-        this.categorieId = categorieId;
+    public void setTypeCategorie(String typeCategorie) {
+        this.typeCategorie = typeCategorie;
     }
 
     // equals, hashCode, and toString methods
@@ -127,13 +134,12 @@ public class ContenuDTO {
         return "ContenuDTO{" +
                 "id=" + id +
                 ", titre='" + titre + '\'' +
-                ", langue='" + langue + '\'' +
                 ", description='" + description + '\'' +
                 ", urlContenu='" + urlContenu + '\'' +
                 ", duree='" + duree + '\'' +
                 ", typeInfo=" + typeInfo +
                 ", adminId=" + adminId +
-                ", categorieId=" + categorieId +
+                ", typeCategorie='" + typeCategorie + '\'' +
                 '}';
     }
 }

@@ -16,13 +16,10 @@ public class UtilisateurDTO {
     private String prenom;
     private String localite;
     private String numeroTel;
-    
     @JsonIgnore
     private String motCle;
-    
     private Role role;
     private boolean active;
-    
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 

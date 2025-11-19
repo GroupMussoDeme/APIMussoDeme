@@ -52,7 +52,7 @@ public class FemmeRuraleService {
     private final RechercherParLocalisationRepository rechercherParLocalisationRepository;
     private final AcheteurRepository acheteurRepository;
 
-    // Constructor for dependency injection
+    // Construteur de l'injection de dependence
     public FemmeRuraleService(
             FemmeRuraleRepository femmeRuraleRepository,
             ProduitRepository produitRepository,

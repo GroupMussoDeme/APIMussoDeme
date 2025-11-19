@@ -12,11 +12,8 @@ import java.util.List;
 
 public interface ContenuRepository extends JpaRepository<Contenu, Long> {
     
-    // Filtrer par catégorie
-    List<Contenu> findByCategorie(Categorie categorie);
-    
     // Filtrer par type de catégorie (AUDIO, VIDEO, INSTITUTION_FINANCIERE)
-    @Query("SELECT c FROM Contenu c WHERE c.categorie.typeCategorie = :type")
+    @Query("SELECT c FROM Contenu c WHERE c.categorie = :type")
     List<Contenu> findByCategorieType(@Param("type") TypeCategorie type);
     
     // Lister tous les contenus triés par date de création (plus récent d'abord)
@@ -32,7 +29,7 @@ public interface ContenuRepository extends JpaRepository<Contenu, Long> {
     List<Contenu> findAllWithDuration();
     
     // Filtrer par type ET avec durée
-    @Query("SELECT c FROM Contenu c WHERE c.categorie.typeCategorie = :type AND c.duree IS NOT NULL AND c.duree != ''")
+    @Query("SELECT c FROM Contenu c WHERE c.categorie = :type AND c.duree IS NOT NULL AND c.duree != ''")
     List<Contenu> findByCategorieTypeWithDuration(@Param("type") TypeCategorie type);
     
     // Filtrer par TypeInfo (SANTE, NUTRITION, DROIT, VIDEO_FORMATION)
@@ -40,6 +37,6 @@ public interface ContenuRepository extends JpaRepository<Contenu, Long> {
     List<Contenu> findByTypeInfo(@Param("typeInfo") TypeInfo typeInfo);
     
     // Filtrer par TypeInfo et TypeCategorie combinés
-    @Query("SELECT c FROM Contenu c WHERE c.typeInfo = :typeInfo AND c.categorie.typeCategorie = :typeCategorie")
+    @Query("SELECT c FROM Contenu c WHERE c.typeInfo = :typeInfo AND c.categorie = :typeCategorie")
     List<Contenu> findByTypeInfoAndTypeCategorie(@Param("typeInfo") TypeInfo typeInfo, @Param("typeCategorie") TypeCategorie typeCategorie);
 }

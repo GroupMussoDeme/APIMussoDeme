@@ -1,6 +1,12 @@
 package com.mussodeme.MussoDeme.controllers;
 
+import com.mussodeme.MussoDeme.dto.CreateUtilisateurRequest;
+import com.mussodeme.MussoDeme.dto.UpdateUtilisateurRequest;
+import com.mussodeme.MussoDeme.dto.UtilisateurDTO;
 import com.mussodeme.MussoDeme.services.UtilisateurService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +22,76 @@ public class UtilisateurController {
     public UtilisateurController(UtilisateurService utilisateurService) {
         this.utilisateurService = utilisateurService;
     }
+
+    // ==================== CRUD OPERATIONS ====================
+
+    /**
+     * Create a new user
+     */
+    @PostMapping
+    public ResponseEntity<UtilisateurDTO> createUser(@Valid @RequestBody CreateUtilisateurRequest request) {
+        try {
+            UtilisateurDTO createdUser = utilisateurService.createUser(request);
+            return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            throw e; // Let the global exception handler handle this
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la création de l'utilisateur: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get user by ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<UtilisateurDTO> getUserById(@PathVariable Long id) {
+        try {
+            UtilisateurDTO user = utilisateurService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            throw new RuntimeException("Utilisateur non trouvé: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get all users
+     */
+    @GetMapping
+    public ResponseEntity<List<UtilisateurDTO>> getAllUsers() {
+        List<UtilisateurDTO> users = utilisateurService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
+    /**
+     * Update user
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<UtilisateurDTO> updateUser(@PathVariable Long id, 
+                                                   @Valid @RequestBody UpdateUtilisateurRequest request) {
+        try {
+            UtilisateurDTO updatedUser = utilisateurService.updateUser(id, request);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalArgumentException e) {
+            throw e; // Let the global exception handler handle this
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la mise à jour de l'utilisateur: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Delete user
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        try {
+            utilisateurService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la suppression de l'utilisateur: " + e.getMessage());
+        }
+    }
+
+    // ==================== EXISTING FILE OPERATIONS ====================
 
     // Upload audio
     @PostMapping("/{id}/upload-audio")

@@ -56,4 +56,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     // Trouver les dernières notifications d'un utilisateur (limitées)
     @Query("SELECT n FROM Notification n WHERE n.utilisateur = :utilisateur ORDER BY n.dateNotif DESC")
     List<Notification> findRecentNotifications(@Param("utilisateur") Utilisateur utilisateur);
+    
+    // Supprimer toutes les notifications d'un utilisateur
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Notification n WHERE n.utilisateur.id = :utilisateurId")
+    void deleteByUtilisateurId(@Param("utilisateurId") Long utilisateurId);
 }

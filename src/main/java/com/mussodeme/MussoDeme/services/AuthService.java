@@ -36,7 +36,7 @@ public class AuthService {
     private final NotificationService notificationService;
     private final SMSService smsService;
 
-    // Constructor for dependency injection
+    // Construteur de l'injection de dependence
     public AuthService(AdminRepository adminRepository, FemmeRuraleRepository femmeRuraleRepository,
                        PasswordEncoder passwordEncoder, JwtUtils jwtUtils,
                        NotificationService notificationService, SMSService smsService) {

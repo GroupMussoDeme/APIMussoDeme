@@ -6,6 +6,7 @@ import com.mussodeme.MussoDeme.dto.InstitutionFinanciereDTO;
 import com.mussodeme.MussoDeme.dto.UpdateAdminRequest;
 import com.mussodeme.MussoDeme.dto.UtilisateurDTO;
 import com.mussodeme.MussoDeme.entities.*;
+import com.mussodeme.MussoDeme.enums.Role;
 import com.mussodeme.MussoDeme.enums.TypeCategorie;
 import com.mussodeme.MussoDeme.enums.TypeInfo;
 import com.mussodeme.MussoDeme.exceptions.NotFoundException;
@@ -15,13 +16,14 @@ import com.mussodeme.MussoDeme.repository.ContenuRepository;
 import com.mussodeme.MussoDeme.repository.FemmeRuraleRepository;
 import com.mussodeme.MussoDeme.repository.InstitutionFinanciereRepository;
 import com.mussodeme.MussoDeme.repository.UtilisateursRepository;
-import com.mussodeme.MussoDeme.services.SMSService;
+import com.mussodeme.MussoDeme.enums.TypeNotif;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -40,12 +42,14 @@ public class AdminService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final SMSService smsService;
+    private final NotificationService notificationService;
 
     // Constructor for dependency injection
     public AdminService(AdminRepository adminRepository, ContenuRepository contenuRepository, 
                        CategorieRepository categorieRepository, InstitutionFinanciereRepository institutionRepository,
                        UtilisateursRepository utilisateursRepository, FemmeRuraleRepository femmeRuraleRepository,
-                       ModelMapper modelMapper, PasswordEncoder passwordEncoder, SMSService smsService) {
+                       ModelMapper modelMapper, PasswordEncoder passwordEncoder, SMSService smsService,
+                       NotificationService notificationService) {
         this.adminRepository = adminRepository;
         this.contenuRepository = contenuRepository;
         this.categorieRepository = categorieRepository;
@@ -55,6 +59,7 @@ public class AdminService {
         this.modelMapper = modelMapper;
         this.passwordEncoder = passwordEncoder;
         this.smsService = smsService;
+        this.notificationService = notificationService;
     }
 
     //================= GESTION DU PROFIL ADMIN ===================
@@ -256,20 +261,16 @@ public class AdminService {
                     return new NotFoundException("Administrateur non trouvé avec l'ID: " + dto.getAdminId());
                 });
 
-        Categorie categorie = categorieRepository.findById(dto.getCategorieId())
-                .orElseThrow(() -> {
-                    logger.warning("Catégorie non trouvée avec l'ID: " + dto.getCategorieId());
-                    return new NotFoundException("Catégorie non trouvée avec l'ID: " + dto.getCategorieId());
-                });
+        // Convertir la chaîne en énumération TypeCategorie
+        TypeCategorie typeCategorie = TypeCategorie.valueOf(dto.getTypeCategorie());
 
         Contenu contenu = new Contenu();
         contenu.setTitre(dto.getTitre().trim());
-        contenu.setLangue(dto.getLangue());
         contenu.setDescription(dto.getDescription() != null ? dto.getDescription().trim() : null);
         contenu.setUrlContenu(dto.getUrlContenu());
         contenu.setDuree(dto.getDuree());
         contenu.setTypeInfo(dto.getTypeInfo());
-        contenu.setCategorie(categorie);
+        contenu.setCategorie(typeCategorie);
         contenu.setAdmin(admin);
 
         Contenu saved = contenuRepository.save(contenu);
@@ -329,12 +330,11 @@ public class AdminService {
                 .map(c -> new ContenuDTO(
                         c.getId(),
                         c.getTitre(),
-                        c.getLangue(),
                         c.getDescription(),
                         c.getUrlContenu(),
                         c.getDuree(),
                         c.getAdmin().getId(),
-                        c.getCategorie().getId()
+                        c.getCategorie().name()
                 ))
                 .collect(Collectors.toList());
     }
@@ -354,12 +354,11 @@ public class AdminService {
                     .map(c -> new ContenuDTO(
                             c.getId(),
                             c.getTitre(),
-                            c.getLangue(),
                             c.getDescription(),
                             c.getUrlContenu(),
                             c.getDuree(),
                             c.getAdmin().getId(),
-                            c.getCategorie().getId()
+                            c.getCategorie().name()
                     ))
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
@@ -388,12 +387,11 @@ public class AdminService {
                 .map(c -> new ContenuDTO(
                         c.getId(),
                         c.getTitre(),
-                        c.getLangue(),
                         c.getDescription(),
                         c.getUrlContenu(),
                         c.getDuree(),
                         c.getAdmin().getId(),
-                        c.getCategorie().getId()
+                        c.getCategorie().name()
                 ))
                 .collect(Collectors.toList());
     }
@@ -411,12 +409,11 @@ public class AdminService {
                 .map(c -> new ContenuDTO(
                         c.getId(),
                         c.getTitre(),
-                        c.getLangue(),
                         c.getDescription(),
                         c.getUrlContenu(),
                         c.getDuree(),
                         c.getAdmin().getId(),
-                        c.getCategorie().getId()
+                        c.getCategorie().name()
                 ))
                 .collect(Collectors.toList());
     }
@@ -429,7 +426,7 @@ public class AdminService {
         logger.info("Récupération des contenus par TypeInfo: " + typeInfo);
         
         try {
-            TypeInfo type = TypeInfo.valueOf(typeInfo.toUpperCase());
+            TypeInfo type = TypeInfo.valueOf(typeInfo.trim().toUpperCase());
             List<Contenu> contenus = contenuRepository.findByTypeInfo(type);
             logger.fine(contenus.size() + " contenus de TypeInfo " + type + " trouvés");
             
@@ -653,6 +650,65 @@ public class AdminService {
     }
     
     /**
+     * Helper method to create a Utilisateur object from an Admin
+     * This is needed for notification services that require a Utilisateur parameter
+     */
+    private Utilisateur createUtilisateurFromAdmin(Admin admin) {
+        return new Utilisateur() {
+            @Override
+            public Long getId() {
+                return admin.getId();
+            }
+            
+            @Override
+            public String getNom() {
+                return admin.getNom();
+            }
+            
+            @Override
+            public String getEmail() {
+                return admin.getEmail();
+            }
+            
+            @Override
+            public Role getRole() {
+                return admin.getRole();
+            }
+            
+            @Override
+            public boolean isActive() {
+                return admin.isActive();
+            }
+            
+            // Implement other abstract methods with default behavior
+            @Override
+            public String getPrenom() {
+                return ""; // Admin doesn't have prenom field
+            }
+            
+            @Override
+            public String getNumeroTel() {
+                return ""; // Admin doesn't have numeroTel field
+            }
+            
+            @Override
+            public String getMotCle() {
+                return ""; // Admin doesn't have motCle field
+            }
+            
+            @Override
+            public String getLocalite() {
+                return ""; // Admin doesn't have localite field
+            }
+            
+            @Override
+            public LocalDateTime getCreatedAt() {
+                return LocalDateTime.now(); // Return current time for admin
+            }
+        };
+    }
+    
+    /**
      * Activer un utilisateur
      */
     @Transactional
@@ -682,6 +738,16 @@ public class AdminService {
         
         // Envoyer SMS de notification
         smsService.envoyerSMSActivationUtilisateur(utilisateur, true, admin.getNom());
+        
+        // Envoyer notifications in-app
+        String adminMessage = String.format("Vous avez activé le compte de l'utilisateur %s %s", 
+                                          utilisateur.getPrenom(), utilisateur.getNom());
+        String userMessage = String.format("Votre compte a été activé par l'administrateur %s", admin.getNom());
+        
+        // Create a temporary Utilisateur object for the admin to send notifications
+                Utilisateur adminAsUser = createUtilisateurFromAdmin(admin);
+                notificationService.creerNotification(adminAsUser, TypeNotif.INFO, adminMessage);
+        notificationService.creerNotification(utilisateur, TypeNotif.INFO, userMessage);
         
         logger.info("Utilisateur " + userId + " activé avec succès (Nom: " + utilisateur.getPrenom() + " " + utilisateur.getNom() + ", Rôle: " + utilisateur.getRole() + ")");
     }
@@ -716,6 +782,16 @@ public class AdminService {
         
         // Envoyer SMS de notification
         smsService.envoyerSMSActivationUtilisateur(utilisateur, false, admin.getNom());
+        
+        // Envoyer notifications in-app
+        String adminMessage = String.format("Vous avez désactivé le compte de l'utilisateur %s %s", 
+                                          utilisateur.getPrenom(), utilisateur.getNom());
+        String userMessage = String.format("Votre compte a été désactivé par l'administrateur %s", admin.getNom());
+        
+        // Create a temporary Utilisateur object for the admin to send notifications
+                Utilisateur adminAsUser = createUtilisateurFromAdmin(admin);
+                notificationService.creerNotification(adminAsUser, TypeNotif.INFO, adminMessage);
+        notificationService.creerNotification(utilisateur, TypeNotif.INFO, userMessage);
         
         logger.info("Utilisateur " + userId + " désactivé avec succès (Nom: " + utilisateur.getPrenom() + " " + utilisateur.getNom() + ", Rôle: " + utilisateur.getRole() + ")");
     }

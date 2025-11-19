@@ -1,10 +1,12 @@
 package com.mussodeme.MussoDeme.services;
 
+import com.mussodeme.MussoDeme.dto.CategorieDTO;
 import com.mussodeme.MussoDeme.dto.ContenuDTO;
 import com.mussodeme.MussoDeme.entities.Admin;
 import com.mussodeme.MussoDeme.entities.Contenu;
 import com.mussodeme.MussoDeme.entities.Categorie;
-import com.mussodeme.MussoDeme.entities.Utilisateur;
+import com.mussodeme.MussoDeme.enums.TypeInfo;
+import com.mussodeme.MussoDeme.enums.TypeCategorie;
 import com.mussodeme.MussoDeme.exceptions.NotFoundException;
 import com.mussodeme.MussoDeme.repository.AdminRepository;
 import com.mussodeme.MussoDeme.repository.ContenuRepository;
@@ -24,118 +26,133 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class ContenuService {
 
-    private final ContenuRepository audioRepo;
+    private final ContenuRepository contenuRepo;
     private final AdminRepository userRepo;
     private final CategorieRepository categorieRepo;
 
-    private final Path audioStorage = Paths.get("uploads/audios");
+    private final Path contenuStorage = Paths.get("uploads/contenus");
 
     // Constructor for dependency injection
-    public ContenuService(ContenuRepository audioRepo, AdminRepository userRepo, CategorieRepository categorieRepo) {
-        this.audioRepo = audioRepo;
+    public ContenuService(ContenuRepository contenuRepo, AdminRepository userRepo, CategorieRepository categorieRepo) {
+        this.contenuRepo = contenuRepo;
         this.userRepo = userRepo;
         this.categorieRepo = categorieRepo;
     }
 
-    public ContenuDTO uploadAudio(MultipartFile file, ContenuDTO dto) throws IOException {
-        try {
-            if (!Files.exists(audioStorage)) Files.createDirectories(audioStorage);
+    public ContenuDTO televerserContenu(MultipartFile file, String titre, String description, String duree, String typeInfo, String categorie, Long adminId) throws IOException {
+        // Vérification admin
+        Admin admin = userRepo.findById(adminId)
+                .orElseThrow(() -> new NotFoundException("Admin non trouvé"));
 
-            String filename = StringUtils.cleanPath(file.getOriginalFilename());
-            Path targetPath = audioStorage.resolve(filename);
-            Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        // Conversion de la chaîne en énumération TypeCategorie
+        TypeCategorie typeCategorie = TypeCategorie.valueOf(categorie);
 
-            Admin admin = userRepo.findById(dto.getAdminId())
-                    .orElseThrow(() -> new NotFoundException("Utilisateur introuvable"));
+        //  Sauvegarde du fichier dans /uploads/
+        String uploadDir = "uploads/";
+        Files.createDirectories(Paths.get(uploadDir));
 
-            Categorie categorie = categorieRepo.findById(dto.getCategorieId())
-                    .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path filePath = Paths.get(uploadDir + fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            Contenu audio = new Contenu();
-            audio.setTitre(dto.getTitre());
-            audio.setLangue(dto.getLangue());
-            audio.setDescription(dto.getDescription());
-            audio.setDuree(dto.getDuree());
-            audio.setUrlContenu(targetPath.toString());
-            
-            Admin adminInstance = new Admin();
-            audio.setAdmin(adminInstance);
-            audio.setCategorie(categorie);
+        //  Création du contenu
+        Contenu contenu = new Contenu();
+        contenu.setTitre(titre);
+        contenu.setDescription(description);
+        contenu.setDuree(duree);
+        contenu.setTypeInfo(TypeInfo.valueOf(typeInfo.trim().toUpperCase()));
+        contenu.setUrlContenu(filePath.toString());
+        contenu.setCategorie(typeCategorie);
+        contenu.setAdmin(admin);
 
-            Contenu saved = audioRepo.save(audio);
+        Contenu saved = contenuRepo.save(contenu);
 
-            dto.setId(saved.getId());
-            dto.setUrlContenu(saved.getUrlContenu());
-            return dto;
+        // Retour DTO
+        ContenuDTO dto = new ContenuDTO();
+        dto.setId(saved.getId());
+        dto.setTitre(saved.getTitre());
+        dto.setDescription(saved.getDescription());
+        dto.setDuree(saved.getDuree());
+        dto.setUrlContenu(saved.getUrlContenu());
+        dto.setTypeInfo(saved.getTypeInfo());
+        dto.setTypeCategorie(categorie);
+        dto.setAdminId(adminId);
 
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur lors de l’upload : " + e.getMessage(), e);
-        }
+        return dto;
     }
 
     // ------------------ LIST ------------------
-    public List<ContenuDTO> listAudios() {
-        return audioRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    public List<ContenuDTO> listContenus() {
+        return contenuRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     // ------------------ GET BY ID ------------------
-    public ContenuDTO getAudio(Long id) {
-        Contenu audio = audioRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
-        return toDTO(audio);
+    public ContenuDTO getContenu(Long id) {
+        Contenu contenu = contenuRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Contenu introuvable"));
+        return toDTO(contenu);
     }
 
     // ------------------ DOWNLOAD ------------------
-    public Resource downloadAudio(Long id) throws MalformedURLException {
-        Contenu audio = audioRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
-        return new UrlResource(Paths.get(audio.getUrlContenu()).toUri());
+    public Resource downloadContenu(Long id) throws MalformedURLException {
+        Contenu contenu = contenuRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Contenu introuvable"));
+        return new UrlResource(Paths.get(contenu.getUrlContenu()).toUri());
     }
 
     // ------------------ UPDATE ------------------
-    public ContenuDTO updateAudio(Long id, ContenuDTO dto) {
-        Contenu audio = audioRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
+    public ContenuDTO updateContenu(Long id, ContenuDTO dto) {
+        Contenu contenu = contenuRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Contenu introuvable"));
 
-        audio.setTitre(dto.getTitre());
-        audio.setLangue(dto.getLangue());
-        audio.setDescription(dto.getDescription());
-        audio.setDuree(dto.getDuree());
+        contenu.setTitre(dto.getTitre());
+        contenu.setDescription(dto.getDescription());
+        contenu.setDuree(dto.getDuree());
+        contenu.setTypeInfo(dto.getTypeInfo());
 
         // Optionnel : changer la catégorie
-        if (dto.getCategorieId() != null) {
-            Categorie cat = categorieRepo.findById(dto.getCategorieId())
-                    .orElseThrow(() -> new NotFoundException("Catégorie introuvable"));
-            audio.setCategorie(cat);
+        if (dto.getTypeCategorie() != null) {
+            TypeCategorie typeCategorie = TypeCategorie.valueOf(dto.getTypeCategorie());
+            contenu.setCategorie(typeCategorie);
         }
 
-        Contenu updated = audioRepo.save(audio);
+        Contenu updated = contenuRepo.save(contenu);
         return toDTO(updated);
     }
 
     // ------------------ DELETE ------------------
-    public void deleteAudio(Long id) throws IOException {
-        Contenu audio = audioRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Audio introuvable"));
-        Path path = Paths.get(audio.getUrlContenu());
+    public void deleteContenu(Long id) throws IOException {
+        Contenu contenu = contenuRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Contenu introuvable"));
+        Path path = Paths.get(contenu.getUrlContenu());
         if (Files.exists(path)) Files.delete(path);
-        audioRepo.delete(audio);
+        contenuRepo.delete(contenu);
     }
 
     // ------------------ Mapper ------------------
-    private ContenuDTO toDTO(Contenu audio) {
+    private ContenuDTO toDTO(Contenu contenu) {
         ContenuDTO dto = new ContenuDTO();
-        dto.setId(audio.getId());
-        dto.setTitre(audio.getTitre());
-        dto.setLangue(audio.getLangue());
-        dto.setDescription(audio.getDescription());
-        dto.setDuree(audio.getDuree());
-        dto.setUrlContenu(audio.getUrlContenu());
-        dto.setAdminId(audio.getAdmin().getId());
-        dto.setCategorieId(audio.getCategorie().getId());
+        dto.setId(contenu.getId());
+        dto.setTitre(contenu.getTitre());
+        dto.setDescription(contenu.getDescription());
+        dto.setDuree(contenu.getDuree());
+        dto.setUrlContenu(contenu.getUrlContenu());
+        dto.setTypeInfo(contenu.getTypeInfo());
+        dto.setAdminId(contenu.getAdmin().getId());
+        dto.setTypeCategorie(contenu.getCategorie().name());
+        
         return dto;
     }
 }

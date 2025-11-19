@@ -18,6 +18,7 @@ public class FileStorageService {
         try {
             Files.createDirectories(rootLocation.resolve("audios"));
             Files.createDirectories(rootLocation.resolve("videos"));
+            Files.createDirectories(rootLocation.resolve("logos"));
         } catch (IOException e) {
             throw new RuntimeException("Impossible de créer les dossiers de stockage", e);
         }
@@ -26,7 +27,8 @@ public class FileStorageService {
     // -------------------- Enregistrement fichier --------------------
     public String saveFile(MultipartFile file, String type) {
         try {
-            String folder = type.equalsIgnoreCase("audio") ? "audios" : "videos";
+            String folder = type.equalsIgnoreCase("audio") ? "audios" : 
+                           type.equalsIgnoreCase("logo") ? "logos" : "videos";
             Path destination = this.rootLocation.resolve(folder)
                     .resolve(file.getOriginalFilename());
 
@@ -43,7 +45,9 @@ public class FileStorageService {
     // -------------------- Lecture fichier --------------------
     public Resource loadFile(String filename, String type) {
         try {
-            Path file = rootLocation.resolve(type.equals("audio") ? "audios" : "videos").resolve(filename);
+            String folder = type.equals("audio") ? "audios" : 
+                           type.equals("logo") ? "logos" : "videos";
+            Path file = rootLocation.resolve(folder).resolve(filename);
             Resource resource = new UrlResource(file.toUri());
 
             if (resource.exists() || resource.isReadable()) {

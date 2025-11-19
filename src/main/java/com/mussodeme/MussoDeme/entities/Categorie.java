@@ -12,27 +12,21 @@ public class Categorie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private TypeCategorie typeCategorie;
+    private String typeCategorie;
 
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private Admin admin;
-
-
-    @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL)
-    private List<Contenu> contenus;
 
     // Default constructor
     public Categorie() {
     }
 
     // Constructor with all fields
-    public Categorie(Long id, TypeCategorie typeCategorie, Admin admin, List<Contenu> contenus) {
+    public Categorie(Long id, String typeCategorie, Admin admin) {
         this.id = id;
         this.typeCategorie = typeCategorie;
         this.admin = admin;
-        this.contenus = contenus;
     }
 
     // Getters and Setters
@@ -44,11 +38,11 @@ public class Categorie {
         this.id = id;
     }
 
-    public TypeCategorie getTypeCategorie() {
+    public String getTypeCategorie() {
         return typeCategorie;
     }
 
-    public void setTypeCategorie(TypeCategorie typeCategorie) {
+    public void setTypeCategorie(String typeCategorie) {
         this.typeCategorie = typeCategorie;
     }
 
@@ -58,14 +52,6 @@ public class Categorie {
 
     public void setAdmin(Admin admin) {
         this.admin = admin;
-    }
-
-    public List<Contenu> getContenus() {
-        return contenus;
-    }
-
-    public void setContenus(List<Contenu> contenus) {
-        this.contenus = contenus;
     }
 
     // equals, hashCode, and toString methods
@@ -86,9 +72,8 @@ public class Categorie {
     public String toString() {
         return "Categorie{" +
                 "id=" + id +
-                ", typeCategorie=" + typeCategorie +
+                ", typeCategorie='" + typeCategorie + '\'' +
                 ", admin=" + admin +
-                ", contenus=" + contenus +
                 '}';
     }
 }
