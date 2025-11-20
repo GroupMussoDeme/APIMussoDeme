@@ -30,22 +30,22 @@ public abstract class Utilisateur {
     @Column(name = "date_creation", nullable = false, updatable = false)
     private final LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "utilisateur")
-    private List<Notification> notifications;
+    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notification> notifications = new ArrayList<>();
 
-    @OneToMany(mappedBy = "utilisateur")
+    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<GestionAdmin> gestionsAdmin = new ArrayList<>();
 
-    @OneToMany(mappedBy = "utilisateur")
+    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UtilisateurAudio> utilisateurAudio = new ArrayList<>();
 
-    @OneToMany(mappedBy = "utilisateur")
-    private List<Historique> historiques;
+    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Historique> historiques = new ArrayList<>();
     
-    @OneToMany(mappedBy = "acheteur")
+    @OneToMany(mappedBy = "acheteur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Commande> commandes = new ArrayList<>();
     
-    @OneToMany(mappedBy = "acheteur")
+    @OneToMany(mappedBy = "acheteur", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Paiement> paiements = new ArrayList<>();
 
     // Default constructor

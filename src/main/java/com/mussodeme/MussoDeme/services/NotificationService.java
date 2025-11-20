@@ -1,9 +1,11 @@
 package com.mussodeme.MussoDeme.services;
 
 import com.mussodeme.MussoDeme.dto.NotificationDTO;
+import com.mussodeme.MussoDeme.dto.NotifAdminDTO;
 import com.mussodeme.MussoDeme.entities.*;
 import com.mussodeme.MussoDeme.enums.TypeNotif;
 import com.mussodeme.MussoDeme.repository.NotificationRepository;
+import com.mussodeme.MussoDeme.repository.NotifAdminRepository;
 import com.mussodeme.MussoDeme.services.SMSService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -20,16 +22,19 @@ public class NotificationService {
     private static final Logger logger = Logger.getLogger(NotificationService.class.getName());
 
     private final NotificationRepository notificationRepository;
+    private final NotifAdminRepository notifAdminRepository;
     private final EmailService emailService;
     private final SMSService smsService;
     private final ModelMapper modelMapper;
 
     // Constructor for dependency injection
     public NotificationService(NotificationRepository notificationRepository,
+                              NotifAdminRepository notifAdminRepository,
                               EmailService emailService,
                               SMSService smsService,
                               ModelMapper modelMapper) {
         this.notificationRepository = notificationRepository;
+        this.notifAdminRepository = notifAdminRepository;
         this.emailService = emailService;
         this.smsService = smsService;
         this.modelMapper = modelMapper;
@@ -41,6 +46,15 @@ public class NotificationService {
     @Transactional
     public NotificationDTO creerNotification(Utilisateur utilisateur, TypeNotif typeNotif, String description) {
         Notification notification = new Notification();
+        
+        // Check if utilisateur is a transient instance (not yet saved)
+        if (utilisateur.getId() == null) {
+            // If utilisateur is transient, we can't create a notification for it
+            // Log the issue and return null or throw an exception
+            logger.warning("Impossible de créer une notification pour un utilisateur non enregistré : " + description);
+            return null;
+        }
+        
         notification.setUtilisateur(utilisateur);
         notification.setTypeNotif(typeNotif);
         notification.setDescription(description);
@@ -49,6 +63,33 @@ public class NotificationService {
 
         notification = notificationRepository.save(notification);
         logger.info("Notification créée pour l'utilisateur " + utilisateur.getNom() + " : " + description);
+
+        return mapToDTO(notification);
+    }
+
+    /**
+     * Créer une notification in-app pour un administrateur
+     */
+    @Transactional
+    public NotifAdminDTO creerNotificationAdmin(Admin admin, TypeNotif typeNotif, String description) {
+        NotifAdmin notification = new NotifAdmin();
+        
+        // Check if admin is a transient instance (not yet saved)
+        if (admin.getId() == null) {
+            // If admin is transient, we can't create a notification for it
+            // Log the issue and return null or throw an exception
+            logger.warning("Impossible de créer une notification pour un admin non enregistré : " + description);
+            return null;
+        }
+        
+        notification.setAdmin(admin);
+        notification.setTypeNotif(typeNotif);
+        notification.setDescription(description);
+        notification.setStatus(false); // Non lue par défaut
+        notification.setDateNotif(new Date());
+
+        notification = notifAdminRepository.save(notification);
+        logger.info("Notification créée pour l'admin " + admin.getNom() + " : " + description);
 
         return mapToDTO(notification);
     }
@@ -70,15 +111,26 @@ public class NotificationService {
         );
 
         // Créer notification in-app pour le vendeur
-        creerNotification(vendeur, TypeNotif.COMMANDE, description);
-
-        // Envoyer notification par le bon canal
-        if (vendeur.getEmail() != null && !vendeur.getEmail().isEmpty()) {
-            // Utilisateur avec email (admin) -> email
-            emailService.envoyerEmailNouvelleCommande(commande, vendeur);
-        } else {
-            // Femme rurale -> SMS
-            smsService.envoyerSMSNouvelleCommande(commande);
+        NotificationDTO notificationVendeur = creerNotification(vendeur, TypeNotif.COMMANDE, description);
+        
+        // Only send external notification if internal notification was created successfully
+        if (notificationVendeur != null) {
+            // Envoyer notification par le bon canal
+            if (vendeur.getEmail() != null && !vendeur.getEmail().isEmpty()) {
+                // Utilisateur avec email (admin) -> email
+                try {
+                    emailService.envoyerEmailNouvelleCommande(commande, vendeur);
+                } catch (Exception e) {
+                    logger.severe("Erreur lors de l'envoi de l'email au vendeur : " + e.getMessage());
+                }
+            } else {
+                // Femme rurale -> SMS
+                try {
+                    smsService.envoyerSMSNouvelleCommande(commande);
+                } catch (Exception e) {
+                    logger.severe("Erreur lors de l'envoi du SMS au vendeur : " + e.getMessage());
+                }
+            }
         }
 
         logger.info("Notification de nouvelle commande envoyée au vendeur " + vendeur.getNom());
@@ -101,15 +153,26 @@ public class NotificationService {
         );
 
         // Créer notification in-app pour le vendeur
-        creerNotification(vendeur, TypeNotif.PAIEMENT, description);
-
-        // Envoyer notification par le bon canal
-        if (vendeur.getEmail() != null && !vendeur.getEmail().isEmpty()) {
-            // Utilisateur avec email (admin) -> email
-            emailService.envoyerEmailPaiementRecu(paiement, vendeur);
-        } else {
-            // Femme rurale -> SMS
-            smsService.envoyerSMSPaiementRecu(paiement);
+        NotificationDTO notificationVendeur = creerNotification(vendeur, TypeNotif.PAIEMENT, description);
+        
+        // Only send external notification if internal notification was created successfully
+        if (notificationVendeur != null) {
+            // Envoyer notification par le bon canal
+            if (vendeur.getEmail() != null && !vendeur.getEmail().isEmpty()) {
+                // Utilisateur avec email (admin) -> email
+                try {
+                    emailService.envoyerEmailPaiementRecu(paiement, vendeur);
+                } catch (Exception e) {
+                    logger.severe("Erreur lors de l'envoi de l'email au vendeur : " + e.getMessage());
+                }
+            } else {
+                // Femme rurale -> SMS
+                try {
+                    smsService.envoyerSMSPaiementRecu(paiement);
+                } catch (Exception e) {
+                    logger.severe("Erreur lors de l'envoi du SMS au vendeur : " + e.getMessage());
+                }
+            }
         }
 
         logger.info("Notification de paiement reçu envoyée au vendeur " + vendeur.getNom());
@@ -128,20 +191,34 @@ public class NotificationService {
                 produit.getStock()
         );
 
+        int successfulNotifications = 0;
+        
         // Créer notification et envoyer par le bon canal à chaque destinataire
         for (Utilisateur destinataire : destinataires) {
-            creerNotification(destinataire, TypeNotif.PUBLICATION, description);
+            NotificationDTO notification = creerNotification(destinataire, TypeNotif.PUBLICATION, description);
             
-            if (destinataire.getEmail() != null && !destinataire.getEmail().isEmpty()) {
-                // Utilisateur avec email (admin) -> email
-                emailService.envoyerEmailNouveauProduit(produit, destinataire);
-            } else {
-                // Femme rurale -> SMS
-                smsService.envoyerSMSNouveauProduit(produit, destinataire);
+            // Only send external notification if internal notification was created successfully
+            if (notification != null) {
+                if (destinataire.getEmail() != null && !destinataire.getEmail().isEmpty()) {
+                    // Utilisateur avec email (admin) -> email
+                    try {
+                        emailService.envoyerEmailNouveauProduit(produit, destinataire);
+                    } catch (Exception e) {
+                        logger.severe("Erreur lors de l'envoi de l'email au destinataire " + destinataire.getNom() + ": " + e.getMessage());
+                    }
+                } else {
+                    // Femme rurale -> SMS
+                    try {
+                        smsService.envoyerSMSNouveauProduit(produit, destinataire);
+                    } catch (Exception e) {
+                        logger.severe("Erreur lors de l'envoi du SMS au destinataire " + destinataire.getNom() + ": " + e.getMessage());
+                    }
+                }
+                successfulNotifications++;
             }
         }
 
-        logger.info("Notification de nouveau produit envoyée à " + destinataires.size() + " utilisateurs");
+        logger.info("Notification de nouveau produit envoyée à " + successfulNotifications + " utilisateurs sur " + destinataires.size());
     }
 
     /**
@@ -155,22 +232,36 @@ public class NotificationService {
                 cooperative.getNom()
         );
 
+        int successfulNotifications = 0;
+        
         // Notifier tous les membres existants
         for (Utilisateur membre : membres) {
             if (!membre.getId().equals(nouveauMembre.getId())) { // Ne pas notifier le nouveau membre lui-même
-                creerNotification(membre, TypeNotif.COOPERATIVE, description);
+                NotificationDTO notification = creerNotification(membre, TypeNotif.COOPERATIVE, description);
                 
-                if (membre.getEmail() != null && !membre.getEmail().isEmpty()) {
-                    // Utilisateur avec email (admin) -> email
-                    emailService.envoyerEmailNouveauMembreCooperative(cooperative, nouveauMembre, membre);
-                } else {
-                    // Femme rurale -> SMS
-                    smsService.envoyerSMSNouveauMembre(cooperative, nouveauMembre, membre);
+                // Only send external notification if internal notification was created successfully
+                if (notification != null) {
+                    if (membre.getEmail() != null && !membre.getEmail().isEmpty()) {
+                        // Utilisateur avec email (admin) -> email
+                        try {
+                            emailService.envoyerEmailNouveauMembreCooperative(cooperative, nouveauMembre, membre);
+                        } catch (Exception e) {
+                            logger.severe("Erreur lors de l'envoi de l'email au membre " + membre.getNom() + ": " + e.getMessage());
+                        }
+                    } else {
+                        // Femme rurale -> SMS
+                        try {
+                            smsService.envoyerSMSNouveauMembre(cooperative, nouveauMembre, membre);
+                        } catch (Exception e) {
+                            logger.severe("Erreur lors de l'envoi du SMS au membre " + membre.getNom() + ": " + e.getMessage());
+                        }
+                    }
+                    successfulNotifications++;
                 }
             }
         }
 
-        logger.info("Notification de nouveau membre envoyée à " + membres.size() + " membres de la coopérative " + cooperative.getNom());
+        logger.info("Notification de nouveau membre envoyée à " + successfulNotifications + " membres de la coopérative " + cooperative.getNom());
     }
 
     /**
@@ -185,20 +276,34 @@ public class NotificationService {
                 contenu.getTypeContenu()
         );
 
+        int successfulNotifications = 0;
+        
         // Notifier tous les membres de la coopérative
         for (Utilisateur membre : membres) {
-            creerNotification(membre, TypeNotif.CONTENU_PARTAGE, description);
+            NotificationDTO notification = creerNotification(membre, TypeNotif.CONTENU_PARTAGE, description);
             
-            if (membre.getEmail() != null && !membre.getEmail().isEmpty()) {
-                // Utilisateur avec email (admin) -> email
-                emailService.envoyerEmailContenuPartage(contenu, cooperative, membre);
-            } else {
-                // Femme rurale -> SMS
-                smsService.envoyerSMSContenuPartage(contenu, cooperative, membre);
+            // Only send external notification if internal notification was created successfully
+            if (notification != null) {
+                if (membre.getEmail() != null && !membre.getEmail().isEmpty()) {
+                    // Utilisateur avec email (admin) -> email
+                    try {
+                        emailService.envoyerEmailContenuPartage(contenu, cooperative, membre);
+                    } catch (Exception e) {
+                        logger.severe("Erreur lors de l'envoi de l'email au membre " + membre.getNom() + ": " + e.getMessage());
+                    }
+                } else {
+                    // Femme rurale -> SMS
+                    try {
+                        smsService.envoyerSMSContenuPartage(contenu, cooperative, membre);
+                    } catch (Exception e) {
+                        logger.severe("Erreur lors de l'envoi du SMS au membre " + membre.getNom() + ": " + e.getMessage());
+                    }
+                }
+                successfulNotifications++;
             }
         }
 
-        logger.info("Notification de contenu partagé envoyée à " + membres.size() + " membres de la coopérative " + cooperative.getNom());
+        logger.info("Notification de contenu partagé envoyée à " + successfulNotifications + " membres de la coopérative " + cooperative.getNom());
     }
 
     /**
@@ -216,17 +321,28 @@ public class NotificationService {
         );
         
         // Créer notification in-app pour l'acheteur
-        creerNotification(acheteur, TypeNotif.COMMANDE, description);
+        NotificationDTO notificationAcheteur = creerNotification(acheteur, TypeNotif.COMMANDE, description);
         
-        // Envoyer notification par le bon canal
-        if (acheteur.getEmail() != null && !acheteur.getEmail().isEmpty()) {
-            // Utilisateur avec email (admin) -> email
-            // Using existing method instead of non-existent envoyerEmailChangementStatutCommande
-            emailService.envoyerEmailNouvelleCommande(commande, acheteur);
-        } else {
-            // Femme rurale -> SMS
-            // Using existing method instead of non-existent envoyerSMSChangementStatutCommande
-            smsService.envoyerSMSNouvelleCommande(commande);
+        // Only send external notification if internal notification was created successfully
+        if (notificationAcheteur != null) {
+            // Envoyer notification par le bon canal
+            if (acheteur.getEmail() != null && !acheteur.getEmail().isEmpty()) {
+                // Utilisateur avec email (admin) -> email
+                // Using existing method instead of non-existent envoyerEmailChangementStatutCommande
+                try {
+                    emailService.envoyerEmailNouvelleCommande(commande, acheteur);
+                } catch (Exception e) {
+                    logger.severe("Erreur lors de l'envoi de l'email à l'acheteur : " + e.getMessage());
+                }
+            } else {
+                // Femme rurale -> SMS
+                // Using existing method instead of non-existent envoyerSMSChangementStatutCommande
+                try {
+                    smsService.envoyerSMSNouvelleCommande(commande);
+                } catch (Exception e) {
+                    logger.severe("Erreur lors de l'envoi du SMS à l'acheteur : " + e.getMessage());
+                }
+            }
         }
         
         logger.info("Notification de changement de statut de commande envoyée à l'acheteur " + acheteur.getNom());
@@ -310,12 +426,93 @@ public class NotificationService {
         logger.info("Notification " + notificationId + " supprimée");
     }
 
+    /**
+     * Récupérer toutes les notifications d'un admin
+     */
+    @Transactional(readOnly = true)
+    public List<NotifAdminDTO> getNotificationsAdmin(Long adminId) {
+        List<NotifAdmin> notifications = notifAdminRepository.findByAdminId(adminId);
+        return notifications.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Récupérer les notifications non lues d'un admin
+     */
+    @Transactional(readOnly = true)
+    public List<NotifAdminDTO> getNotificationsAdminNonLues(Long adminId) {
+        List<NotifAdmin> notifications = notifAdminRepository.findByAdminIdAndStatusFalse(adminId);
+        return notifications.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Marquer une notification admin comme lue
+     */
+    @Transactional
+    public NotifAdminDTO marquerNotificationAdminCommeLue(Long notificationId) {
+        NotifAdmin notification = notifAdminRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification admin non trouvée avec l'ID : " + notificationId));
+
+        notification.setStatus(true);
+        notification = notifAdminRepository.save(notification);
+
+        logger.info("Notification admin " + notificationId + " marquée comme lue");
+        return mapToDTO(notification);
+    }
+
+    /**
+     * Marquer toutes les notifications d'un admin comme lues
+     */
+    @Transactional
+    public void marquerToutesNotificationsAdminCommeLues(Long adminId) {
+        notifAdminRepository.markAllAsReadForAdmin(adminId);
+        logger.info("Toutes les notifications marquées comme lues pour l'admin " + adminId);
+    }
+
+    /**
+     * Compter les notifications non lues d'un admin
+     */
+    @Transactional(readOnly = true)
+    public Long compterNotificationsAdminNonLues(Long adminId) {
+        return notifAdminRepository.countUnreadNotificationsByAdminId(adminId);
+    }
+
+    /**
+     * Récupérer les notifications d'un admin par type
+     */
+    @Transactional(readOnly = true)
+    public List<NotifAdminDTO> getNotificationsAdminParType(Long adminId, TypeNotif typeNotif) {
+        List<NotifAdmin> notifications = notifAdminRepository.findByAdminIdAndTypeNotif(adminId, typeNotif);
+        return notifications.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Supprimer une notification admin
+     */
+    @Transactional
+    public void supprimerNotificationAdmin(Long notificationId) {
+        notifAdminRepository.deleteById(notificationId);
+        logger.info("Notification admin " + notificationId + " supprimée");
+    }
+
     // ==================== MAPPING ====================
 
     private NotificationDTO mapToDTO(Notification notification) {
         NotificationDTO dto = modelMapper.map(notification, NotificationDTO.class);
         dto.setUtilisateurId(notification.getUtilisateur().getId());
         dto.setUtilisateurNom(notification.getUtilisateur().getNom());
+        return dto;
+    }
+    
+    private NotifAdminDTO mapToDTO(NotifAdmin notification) {
+        NotifAdminDTO dto = modelMapper.map(notification, NotifAdminDTO.class);
+        dto.setAdminId(notification.getAdmin().getId());
+        dto.setAdminNom(notification.getAdmin().getNom());
         return dto;
     }
 }

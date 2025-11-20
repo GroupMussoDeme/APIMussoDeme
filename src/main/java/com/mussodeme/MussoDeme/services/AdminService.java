@@ -22,16 +22,21 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.nio.file.*;
+import java.io.IOException;
 
 @Service
 public class AdminService {
 
     private static final Logger logger = Logger.getLogger(AdminService.class.getName());
+    
+    private static final String IMAGE_DIRECTORY = "uploads/images/";
 
     private final AdminRepository adminRepository;
     private final ContenuRepository contenuRepository;
@@ -237,6 +242,43 @@ public class AdminService {
         // Si toutes les vérifications passent, supprimer le compte
         adminRepository.deleteById(adminId);
         logger.info("Compte admin " + adminId + " supprimé définitivement (Nom: " + admin.getNom() + ", Email: " + admin.getEmail() + ")");
+    }
+    
+    /**
+     * Télécharger une image de profil pour un admin
+     */
+    public String telechargerImageProfil(Long adminId, MultipartFile imageFile) {
+        if (imageFile.isEmpty()) {
+            throw new IllegalArgumentException("Aucun fichier image reçu pour l'administrateur " + adminId);
+        }
+
+        try {
+            // Créer le répertoire s'il n'existe pas
+            Path imageDir = Paths.get(IMAGE_DIRECTORY);
+            if (!Files.exists(imageDir)) {
+                Files.createDirectories(imageDir);
+            }
+            
+            String fileName = "profile_" + adminId + "_" + System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
+            Path filePath = Paths.get(IMAGE_DIRECTORY + fileName);
+            Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Mettre à jour l'URL de l'image dans la base de données
+            Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> {
+                    logger.warning("Admin non trouvé avec l'ID: " + adminId);
+                    return new NotFoundException("Administrateur non trouvé avec l'ID: " + adminId);
+                });
+            
+            String imageUrl = "/uploads/images/" + fileName;
+            admin.setImageUrl(imageUrl);
+            adminRepository.save(admin);
+
+            return imageUrl;
+        } catch (IOException e) {
+            logger.severe("Erreur lors du téléchargement de l'image pour l'admin " + adminId + ": " + e.getMessage());
+            throw new RuntimeException("Erreur lors du téléchargement de l'image : " + e.getMessage());
+        }
     }
 
 
@@ -739,20 +781,19 @@ public class AdminService {
         // Envoyer SMS de notification
         smsService.envoyerSMSActivationUtilisateur(utilisateur, true, admin.getNom());
         
-        // Envoyer notifications in-app
+        // Envoyer notification in-app uniquement à l'utilisateur activé
+        String userMessage = String.format("Votre compte a été activé par l'administrateur %s", admin.getNom());
+        notificationService.creerNotification(utilisateur, TypeNotif.INFO, userMessage);
+        
+        // Envoyer notification in-app à l'administrateur
         String adminMessage = String.format("Vous avez activé le compte de l'utilisateur %s %s", 
                                           utilisateur.getPrenom(), utilisateur.getNom());
-        String userMessage = String.format("Votre compte a été activé par l'administrateur %s", admin.getNom());
-        
-        // Create a temporary Utilisateur object for the admin to send notifications
-                Utilisateur adminAsUser = createUtilisateurFromAdmin(admin);
-                notificationService.creerNotification(adminAsUser, TypeNotif.INFO, adminMessage);
-        notificationService.creerNotification(utilisateur, TypeNotif.INFO, userMessage);
+        notificationService.creerNotificationAdmin(admin, TypeNotif.INFO, adminMessage);
         
         logger.info("Utilisateur " + userId + " activé avec succès (Nom: " + utilisateur.getPrenom() + " " + utilisateur.getNom() + ", Rôle: " + utilisateur.getRole() + ")");
     }
     
-    /**
+    /** 
      * Désactiver un utilisateur
      */
     @Transactional
@@ -783,15 +824,14 @@ public class AdminService {
         // Envoyer SMS de notification
         smsService.envoyerSMSActivationUtilisateur(utilisateur, false, admin.getNom());
         
-        // Envoyer notifications in-app
+        // Envoyer notification in-app uniquement à l'utilisateur désactivé
+        String userMessage = String.format("Votre compte a été désactivé par l'administrateur %s", admin.getNom());
+        notificationService.creerNotification(utilisateur, TypeNotif.INFO, userMessage);
+        
+        // Envoyer notification in-app à l'administrateur
         String adminMessage = String.format("Vous avez désactivé le compte de l'utilisateur %s %s", 
                                           utilisateur.getPrenom(), utilisateur.getNom());
-        String userMessage = String.format("Votre compte a été désactivé par l'administrateur %s", admin.getNom());
-        
-        // Create a temporary Utilisateur object for the admin to send notifications
-                Utilisateur adminAsUser = createUtilisateurFromAdmin(admin);
-                notificationService.creerNotification(adminAsUser, TypeNotif.INFO, adminMessage);
-        notificationService.creerNotification(utilisateur, TypeNotif.INFO, userMessage);
+        notificationService.creerNotificationAdmin(admin, TypeNotif.INFO, adminMessage);
         
         logger.info("Utilisateur " + userId + " désactivé avec succès (Nom: " + utilisateur.getPrenom() + " " + utilisateur.getNom() + ", Rôle: " + utilisateur.getRole() + ")");
     }

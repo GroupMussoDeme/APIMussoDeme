@@ -20,6 +20,8 @@ public class Admin  {
 
     @Column(nullable = false)
     private String motDePasse;
+    
+    private String imageUrl; // Adding image URL field
 
     private boolean active;
 
@@ -89,6 +91,14 @@ public class Admin  {
         this.motDePasse = motDePasse;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public boolean isActive() {
         return active;
     }
@@ -149,6 +159,7 @@ public class Admin  {
                 "id=" + id +
                 ", nom='" + nom + '\'' +
                 ", email='" + email + '\'' +
+                ", imageUrl='" + imageUrl + '\'' + // Adding imageUrl to toString
                 ", active=" + active +
                 ", role=" + role +
                 '}';

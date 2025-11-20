@@ -154,7 +154,7 @@ public class EmailService {
     // ==================== CRÉATION DES TEMPLATES HTML ====================
 
     private String creerTemplateNouvelleCommande(Commande commande, Utilisateur vendeur) {
-        NumberFormat formatMontant = NumberFormat.getCurrencyInstance(Locale.of("fr", "ML"));
+        NumberFormat formatMontant = NumberFormat.getCurrencyInstance(Locale.FRANCE);
         
         return String.format("""
             <!DOCTYPE html>

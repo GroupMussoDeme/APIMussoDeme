@@ -91,6 +91,40 @@ public class UtilisateurController {
         }
     }
 
+    // ==================== ACTIVATION / DÉSACTIVATION ====================
+
+    /**
+     * Activer un utilisateur seulement s'il est désactivé
+     */
+    @PatchMapping("/{id}/activer")
+    public ResponseEntity<UtilisateurDTO> activerUtilisateur(@PathVariable Long id) {
+        try {
+            UtilisateurDTO utilisateur = utilisateurService.activerUtilisateur(id);
+            return ResponseEntity.ok(utilisateur);
+        } catch (IllegalStateException e) {
+            // L'utilisateur est déjà actif
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de l'activation de l'utilisateur: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Désactiver un utilisateur seulement s'il est actif
+     */
+    @PatchMapping("/{id}/desactiver")
+    public ResponseEntity<UtilisateurDTO> desactiverUtilisateur(@PathVariable Long id) {
+        try {
+            UtilisateurDTO utilisateur = utilisateurService.desactiverUtilisateur(id);
+            return ResponseEntity.ok(utilisateur);
+        } catch (IllegalStateException e) {
+            // L'utilisateur est déjà inactif
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la désactivation de l'utilisateur: " + e.getMessage());
+        }
+    }
+
     // ==================== EXISTING FILE OPERATIONS ====================
 
     // Upload audio
@@ -127,5 +161,16 @@ public class UtilisateurController {
     @GetMapping("/{id}/naviguer")
     public String naviguer(@PathVariable Long id, @RequestParam String action) {
         return utilisateurService.naviguerParPictogramme(id, action);
+    }
+    
+    // Upload d'image de profil
+    @PostMapping("/{id}/upload-image")
+    public ResponseEntity<String> uploadProfileImage(@PathVariable Long id, @RequestParam("image") MultipartFile file) {
+        try {
+            String result = utilisateurService.telechargerImageProfil(id, file);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors du téléchargement de l'image: " + e.getMessage());
+        }
     }
 }

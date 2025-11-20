@@ -40,7 +40,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/refresh")
+    @PostMapping("/refresh/refresh")
     public ResponseEntity<LoginResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         logger.info("Requête de rafraîchissement de token reçue");
         LoginResponse response = authService.refreshToken(request);

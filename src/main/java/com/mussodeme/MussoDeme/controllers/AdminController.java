@@ -5,13 +5,14 @@ import com.mussodeme.MussoDeme.dto.ContenuDTO;
 import com.mussodeme.MussoDeme.dto.InstitutionFinanciereDTO;
 import com.mussodeme.MussoDeme.dto.UpdateAdminRequest;
 import com.mussodeme.MussoDeme.dto.UtilisateurDTO;
-import com.mussodeme.MussoDeme.security.util.JwtUtils;
 import com.mussodeme.MussoDeme.services.AdminService;
+import com.mussodeme.MussoDeme.security.util.JwtUtils;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -94,6 +95,21 @@ public class AdminController {
         logger.info("Requête de suppression définitive du compte admin: " + id);
         adminService.deleteAdmin(id);
         return ResponseEntity.ok("Compte administrateur supprimé définitivement");
+    }
+    
+    /**
+     * Télécharger une image de profil pour un admin
+     */
+    @PostMapping("/profile/{id}/upload-image")
+    public ResponseEntity<String> uploadProfileImage(@PathVariable Long id, @RequestParam("image") MultipartFile file) {
+        try {
+            logger.info("Requête de téléchargement d'image de profil pour l'admin: " + id);
+            String imageUrl = adminService.telechargerImageProfil(id, file);
+            return ResponseEntity.ok(imageUrl);
+        } catch (Exception e) {
+            logger.severe("Erreur lors du téléchargement de l'image de profil pour l'admin " + id + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors du téléchargement de l'image: " + e.getMessage());
+        }
     }
 
     //===================== GESTION DES CONTENUS =====================

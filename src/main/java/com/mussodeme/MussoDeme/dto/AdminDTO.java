@@ -14,6 +14,7 @@ public class AdminDTO {
     private String email;
     @JsonIgnore
     private String motDePasse;
+    private String imageUrl; // Adding image URL field
 
     // Default constructor
     public AdminDTO() {
@@ -69,6 +70,14 @@ public class AdminDTO {
         this.motDePasse = motDePasse;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     // equals, hashCode, and toString methods
     @Override
     public boolean equals(Object o) {
@@ -90,6 +99,7 @@ public class AdminDTO {
                 ", nom='" + nom + '\'' +
                 ", role=" + role +
                 ", email='" + email + '\'' +
+                ", imageUrl='" + imageUrl + '\'' + // Adding imageUrl to toString
                 '}';
     }
 }
