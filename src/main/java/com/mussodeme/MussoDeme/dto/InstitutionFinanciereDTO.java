@@ -3,70 +3,73 @@ package com.mussodeme.MussoDeme.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.math.BigDecimal;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InstitutionFinanciereDTO {
+
     private Long id;
     private String nom;
     private String numeroTel;
     private String description;
     private String logoUrl;
+    private BigDecimal montantMin;
+    private BigDecimal montantMax;
+    private String secteurActivite;
+    private String tauxInteret;
 
-    // Default constructor
-    public InstitutionFinanciereDTO() {
-    }
 
-    // Constructor with all fields
-    public InstitutionFinanciereDTO(Long id, String nom, String numeroTel, String description, String logoUrl) {
+    public InstitutionFinanciereDTO() {}
+
+    public InstitutionFinanciereDTO(Long id,
+                                    String nom,
+                                    String numeroTel,
+                                    String description,
+                                    String logoUrl,
+                                    BigDecimal montantMin,
+                                    BigDecimal montantMax,
+                                    String secteurActivite,
+                                    String tauxInteret) {
         this.id = id;
         this.nom = nom;
         this.numeroTel = numeroTel;
         this.description = description;
         this.logoUrl = logoUrl;
+        this.montantMin = montantMin;
+        this.montantMax = montantMax;
+        this.secteurActivite = secteurActivite;
+        this.tauxInteret = tauxInteret;
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    // Getters / Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
 
-    public String getNom() {
-        return nom;
-    }
+    public String getNumeroTel() { return numeroTel; }
+    public void setNumeroTel(String numeroTel) { this.numeroTel = numeroTel; }
 
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getNumeroTel() {
-        return numeroTel;
-    }
+    public String getLogoUrl() { return logoUrl; }
+    public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
 
-    public void setNumeroTel(String numeroTel) {
-        this.numeroTel = numeroTel;
-    }
+    public BigDecimal getMontantMin() { return montantMin; }
+    public void setMontantMin(BigDecimal montantMin) { this.montantMin = montantMin; }
 
-    public String getDescription() {
-        return description;
-    }
+    public BigDecimal getMontantMax() { return montantMax; }
+    public void setMontantMax(BigDecimal montantMax) { this.montantMax = montantMax; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getSecteurActivite() { return secteurActivite; }
+    public void setSecteurActivite(String secteurActivite) { this.secteurActivite = secteurActivite; }
 
-    public String getLogoUrl() {
-        return logoUrl;
-    }
+    public String getTauxInteret() { return tauxInteret; }
+    public void setTauxInteret(String tauxInteret) { this.tauxInteret = tauxInteret; }
 
-    public void setLogoUrl(String logoUrl) {
-        this.logoUrl = logoUrl;
-    }
-
-    // equals, hashCode, and toString methods
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -76,9 +79,7 @@ public class InstitutionFinanciereDTO {
     }
 
     @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
+    public int hashCode() { return getClass().hashCode(); }
 
     @Override
     public String toString() {
@@ -88,6 +89,10 @@ public class InstitutionFinanciereDTO {
                 ", numeroTel='" + numeroTel + '\'' +
                 ", description='" + description + '\'' +
                 ", logoUrl='" + logoUrl + '\'' +
+                ", montantMin=" + montantMin +
+                ", montantMax=" + montantMax +
+                ", secteurActivite='" + secteurActivite + '\'' +
+                ", tauxInteret='" + tauxInteret + '\'' +
                 '}';
     }
 }
