@@ -9,8 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -57,6 +61,34 @@ public class FemmeRuraleController {
                 .message("Écoute du contenu enregistrée avec succès")
                 .data(contenu)
                 .build()
+        );
+    }
+
+    /**
+     * Upload d'une image de produit pour une femme rurale
+     * POST /api/femmes-rurales/{femmeId}/produits/upload-image
+     */
+    @PostMapping("/{femmeId}/produits/upload-image")
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> uploadProduitImage(
+            @PathVariable Long femmeId,
+            @RequestParam("image") MultipartFile imageFile) throws IOException {
+
+        logger.info("[API] Femme " + femmeId + " upload l'image d'un produit : "
+                + imageFile.getOriginalFilename());
+
+        String storedFileName = femmeRuraleService.sauvegarderImageProduit(femmeId, imageFile);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("fileName", storedFileName);
+        payload.put("url", "/uploads/" + storedFileName);
+
+        return ResponseEntity.ok(
+                Response.builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Image uploadée avec succès")
+                        .data(payload)
+                        .build()
         );
     }
 

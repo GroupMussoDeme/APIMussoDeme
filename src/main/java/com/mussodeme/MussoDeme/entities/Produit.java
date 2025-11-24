@@ -10,35 +10,39 @@ import java.util.List;
 @Entity
 @Table(name = "produit")
 public class Produit {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "Le nom est requis")
+    @Column(name = "nom", nullable = false)
     private String nom;
 
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @NotBlank(message = "L'image est requis")
+    @Column(name = "image", nullable = false)
     private String image;
 
     @NotNull(message = "La quantite est requis")
+    @Column(name = "quantite", nullable = false)
     private Integer quantite;
 
     @NotNull(message = "Le prix est requis")
+    @Column(name = "prix", nullable = false)
     private Double prix;
-    
+
     /**
      * Type de produit pour la recherche vocale
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "type_produit")
     private TypeProduit typeProduit;
-    
+
     /**
      * URL du guide audio vocal pour ce produit
-     * Permet aux femmes rurales d'écouter la description du produit
-     * Ex: "Ce savon artisanal est fait avec du beurre de karité..."
      */
     @Column(name = "audio_guide_url")
     private String audioGuideUrl;
@@ -50,13 +54,21 @@ public class Produit {
     @OneToMany(mappedBy = "produit", cascade = CascadeType.ALL)
     private List<Commande> commandes;
 
-    // Default constructor
+    // ===================== CONSTRUCTEURS =====================
+
     public Produit() {
     }
 
-    // Constructor with all fields
-    public Produit(Long id, String nom, String description, String image, Integer quantite, Double prix, 
-                  TypeProduit typeProduit, String audioGuideUrl, FemmeRurale femmeRurale, List<Commande> commandes) {
+    public Produit(Long id,
+                   String nom,
+                   String description,
+                   String image,
+                   Integer quantite,
+                   Double prix,
+                   TypeProduit typeProduit,
+                   String audioGuideUrl,
+                   FemmeRurale femmeRurale,
+                   List<Commande> commandes) {
         this.id = id;
         this.nom = nom;
         this.description = description;
@@ -69,7 +81,8 @@ public class Produit {
         this.commandes = commandes;
     }
 
-    // Getters and Setters
+    // ===================== GETTERS / SETTERS =====================
+
     public Long getId() {
         return id;
     }
@@ -78,12 +91,11 @@ public class Produit {
         this.id = id;
     }
 
-    @NotBlank(message = "Le nom est requis")
     public String getNom() {
         return nom;
     }
 
-    public void setNom(@NotBlank(message = "Le nom est requis") String nom) {
+    public void setNom(String nom) {
         this.nom = nom;
     }
 
@@ -95,39 +107,36 @@ public class Produit {
         this.description = description;
     }
 
-    @NotBlank(message = "L'image est requis")
     public String getImage() {
         return image;
     }
 
-    public void setImage(@NotBlank(message = "L'image est requis") String image) {
+    public void setImage(String image) {
         this.image = image;
     }
 
-    @NotNull(message = "La quantite est requis")
     public Integer getQuantite() {
         return quantite;
     }
 
-    // Adding getStock() method as an alias for getQuantite()
+    public void setQuantite(Integer quantite) {
+        this.quantite = quantite;
+    }
+
+    // Alias pratique
     public Integer getStock() {
         return quantite;
     }
 
-    public void setQuantite(@NotNull(message = "La quantite est requis") Integer quantite) {
-        this.quantite = quantite;
-    }
-
-    @NotNull(message = "Le prix est requis")
     public Double getPrix() {
         return prix;
     }
 
-    public void setPrix(@NotNull(message = "Le prix est requis") Double prix) {
+    public void setPrix(Double prix) {
         this.prix = prix;
     }
 
-    // Adding getVendeur() method as an alias for getFemmeRurale()
+    // Alias pratique pour vendeur
     public FemmeRurale getVendeur() {
         return femmeRurale;
     }
@@ -164,7 +173,8 @@ public class Produit {
         this.commandes = commandes;
     }
 
-    // equals, hashCode, and toString methods
+    // ===================== equals / hashCode / toString =====================
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -189,7 +199,7 @@ public class Produit {
                 ", prix=" + prix +
                 ", typeProduit=" + typeProduit +
                 ", audioGuideUrl='" + audioGuideUrl + '\'' +
-                ", femmeRurale=" + femmeRurale +
+                ", femmeRurale=" + (femmeRurale != null ? femmeRurale.getId() : null) +
                 '}';
     }
 }
