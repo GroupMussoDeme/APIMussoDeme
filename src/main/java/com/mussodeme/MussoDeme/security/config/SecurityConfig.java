@@ -56,8 +56,11 @@ public class SecurityConfig {
                         // LECTURE des contenus (DTO JSON)
                         .requestMatchers(HttpMethod.GET, "/api/contenus/**").permitAll()
 
-                        // LECTURE des fichiers audio/vidéo physiques
+                        // LECTURE des fichiers audio/vidéo physiques (ancienne règle)
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+
+                        // ✅ LECTURE des fichiers via FileController (/api/files/**)
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
 
                         // Gestion des contenus (admin only)
                         .requestMatchers(HttpMethod.POST, "/api/contenus/**").hasRole("ADMIN")
@@ -67,12 +70,15 @@ public class SecurityConfig {
                         // Autres endpoints admin
                         .requestMatchers("/api/audios/**").hasRole("ADMIN")
                         .requestMatchers("/api/categories/**").hasRole("ADMIN")
+
+                        // Institutions : GET public, reste admin
                         .requestMatchers(HttpMethod.GET, "/api/institutions/**").permitAll()
                         .requestMatchers("/api/institutions/**").hasRole("ADMIN")
 
                         // Le reste nécessite une auth
                         .anyRequest().authenticated()
                 )
+
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
