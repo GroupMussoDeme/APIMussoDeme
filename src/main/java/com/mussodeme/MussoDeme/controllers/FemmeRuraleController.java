@@ -165,6 +165,8 @@ public class FemmeRuraleController {
         );
     }
 
+
+
     /**
      * Voir ses propres produits
      * GET /api/femmes-rurales/{femmeId}/mes-produits
