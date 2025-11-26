@@ -678,14 +678,84 @@ public class FemmeRuraleService {
     //================== GESTION DES COMMANDES ==================
 
     /**
+     * Mapping Produit -> ProduitDTO (en enrichissant avec femmeRuraleId)
+     */
+    private ProduitDTO toProduitDto(Produit produit) {
+        if (produit == null) {
+            return null;
+        }
+
+        // On utilise ModelMapper pour les champs de base
+        ProduitDTO dto = modelMapper.map(produit, ProduitDTO.class);
+
+        if (produit.getFemmeRurale() != null) {
+            dto.setFemmeRuraleId(produit.getFemmeRurale().getId());
+        }
+
+        return dto;
+    }
+
+    /**
+     * Mapping Commande -> CommandeDTO avec produit + vendeuse
+     */
+    private CommandeDTO toCommandeDto(Commande commande) {
+        if (commande == null) {
+            return null;
+        }
+
+        // Base : on laisse ModelMapper faire le gros du travail
+        CommandeDTO dto = modelMapper.map(commande, CommandeDTO.class);
+
+        // Sécurise le montantTotal (au cas où)
+        dto.setMontantTotal(commande.getMontantTotal());
+
+        // Ajout du produit
+        Produit produit = commande.getProduit();
+        if (produit != null) {
+            dto.setProduitId(produit.getId());
+            dto.setProduit(toProduitDto(produit));
+
+            // Ajout des infos vendeuse
+            FemmeRurale vendeuse = produit.getFemmeRurale();
+            if (vendeuse != null) {
+                dto.setVendeuseId(vendeuse.getId());
+
+                String nomComplet =
+                        (vendeuse.getPrenom() != null ? vendeuse.getPrenom() + " " : "") +
+                                (vendeuse.getNom() != null ? vendeuse.getNom() : "");
+                nomComplet = nomComplet.trim();
+
+                if (!nomComplet.isEmpty()) {
+                    dto.setVendeuseNom(nomComplet);
+                }
+            }
+        }
+
+        // Ajout de l’acheteurId (par sécurité)
+        if (commande.getAcheteur() != null) {
+            dto.setAcheteurId(commande.getAcheteur().getId());
+        }
+
+        return dto;
+    }
+
+
+    /**
      * Passer une commande
      */
     @Transactional
     public CommandeDTO passerCommande(Long acheteurId, Long produitId, Integer quantite) {
-        logger.info("Acheteur " + acheteurId + " passe une commande pour le produit " + produitId + " (quantité: " + quantite + ")");
+        logger.info("Acheteur " + acheteurId + " passe une commande pour le produit "
+                + produitId + " (quantité: " + quantite + ")");
 
-        // Récupérer l'acheteur (femme rurale ou acheteur)
+        // 0) Vérification quantité
+        if (quantite == null || quantite <= 0) {
+            throw new IllegalArgumentException("La quantité doit être supérieure à 0");
+        }
+
+        // 1) Récupérer l'acheteur (FemmeRurale OU Acheteur standard)
         Utilisateur acheteur = null;
+
         FemmeRurale femmeAcheteur = femmeRuraleRepository.findById(acheteurId).orElse(null);
         if (femmeAcheteur != null) {
             acheteur = femmeAcheteur;
@@ -700,15 +770,30 @@ public class FemmeRuraleService {
             throw new NotFoundException("Acheteur non trouvé avec l'ID: " + acheteurId);
         }
 
+        // 2) Récupérer le produit
         Produit produit = produitRepository.findById(produitId)
                 .orElseThrow(() -> new NotFoundException("Produit non trouvé avec l'ID: " + produitId));
 
-        // Vérifier le stock
-        if (produit.getQuantite() < quantite) {
-            throw new IllegalArgumentException("Stock insuffisant. Disponible: " + produit.getQuantite() + ", Demandé: " + quantite);
+        // 3) Interdiction d’acheter son propre produit (si acheteur est une FemmeRurale)
+        if (acheteur instanceof FemmeRurale) {
+            FemmeRurale vendeuse = produit.getFemmeRurale();
+            if (vendeuse != null && vendeuse.getId().equals(acheteur.getId())) {
+                throw new IllegalArgumentException("Vous ne pouvez pas acheter votre propre produit.");
+            }
         }
 
-        // Créer la commande
+        // 4) Vérifier le stock
+        Integer stock = produit.getQuantite();
+        if (stock == null) {
+            stock = 0;
+        }
+
+        if (stock < quantite) {
+            throw new IllegalArgumentException(
+                    "Stock insuffisant. Disponible: " + stock + ", demandé: " + quantite);
+        }
+
+        // 5) Créer la commande
         Commande commande = new Commande();
         commande.setQuantite(quantite);
         commande.setStatutCommande(StatutCommande.EN_ATTENTE);
@@ -718,20 +803,20 @@ public class FemmeRuraleService {
 
         Commande saved = commandeRepository.save(commande);
 
-        // Mettre à jour le stock
-        produit.setQuantite(produit.getQuantite() - quantite);
+        // 6) Mettre à jour le stock
+        produit.setQuantite(stock - quantite);
         produitRepository.save(produit);
 
-        // Enregistrer dans l'historique
+        // 7) Enregistrer dans l'historique + notif
         historiqueService.enregistrerAchat(acheteur, saved, produit);
-
-        // Notifier le vendeur
         notificationService.notifierNouvelleCommande(saved);
 
         logger.info("Commande " + saved.getId() + " passée avec succès pour le produit " + produitId);
 
-        return modelMapper.map(saved, CommandeDTO.class);
+        // 8) Retourner un DTO enrichi (produit + vendeuse)
+        return toCommandeDto(saved);
     }
+
 
     /**
      * Récupérer les commandes d'un utilisateur
@@ -742,12 +827,12 @@ public class FemmeRuraleService {
         List<Commande> commandes = commandeRepository.findByAcheteurId(utilisateurId);
 
         return commandes.stream()
-                .map(c -> modelMapper.map(c, CommandeDTO.class))
+                .map(this::toCommandeDto)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Récupérer les commandes d'une femme rurale (en tant qu'acheteur ou vendeur)
+     * Récupérer les commandes d'une femme rurale (en tant qu'acheteur OU vendeuse)
      */
     public List<CommandeDTO> getCommandesFemmeRurale(Long femmeId) {
         logger.info("Récupération des commandes de la femme rurale " + femmeId);
@@ -760,21 +845,22 @@ public class FemmeRuraleService {
         allCommandes.addAll(commandesAsAcheteur);
         allCommandes.addAll(commandesAsVendeur);
 
-        // Supprimer les doublons
+        // Supprimer les doublons par ID
         Set<Long> seenIds = new HashSet<>();
         allCommandes.removeIf(c -> !seenIds.add(c.getId()));
 
         return allCommandes.stream()
-                .map(c -> modelMapper.map(c, CommandeDTO.class))
+                .map(this::toCommandeDto)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Voir mes commandes (version alias)
+     * Alias : voir mes commandes
      */
     public List<CommandeDTO> voirMesCommandes(Long femmeId) {
         return getCommandesFemmeRurale(femmeId);
     }
+
 
     /**
      * Mettre à jour le statut d'une commande (admin)

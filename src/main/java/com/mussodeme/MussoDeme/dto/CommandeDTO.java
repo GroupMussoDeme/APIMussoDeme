@@ -13,18 +13,40 @@ public class CommandeDTO {
     private Integer quantite;
     private StatutCommande statutCommande;
     private LocalDateTime dateAchat;
+
     private Long acheteurId;
     private Long produitId;
     private Long paiementId;
-    private Double montantTotal; // Adding montantTotal field
+
+    private Double montantTotal;      // total = prix * quantite
+
+    // ================== CHAMPS AJOUTÉS ==================
+
+    // Produit complet pour le front (Flutter lit json['produit'])
+    private ProduitDTO produit;       // NEW
+
+    // Infos vendeuse = femmeRurale du produit
+    private Long vendeuseId;          // NEW
+    private String vendeuseNom;       // NEW
+
+    // ====================================================
 
     // Default constructor
     public CommandeDTO() {
     }
 
-    // Constructor with all fields
-    public CommandeDTO(Long id, Integer quantite, StatutCommande statutCommande, LocalDateTime dateAchat, 
-                      Long acheteurId, Long produitId, Long paiementId, Double montantTotal) {
+    // Constructor avec tous les champs (tu peux le garder ou l’adapter)
+    public CommandeDTO(Long id,
+                       Integer quantite,
+                       StatutCommande statutCommande,
+                       LocalDateTime dateAchat,
+                       Long acheteurId,
+                       Long produitId,
+                       Long paiementId,
+                       Double montantTotal,
+                       ProduitDTO produit,
+                       Long vendeuseId,
+                       String vendeuseNom) {
         this.id = id;
         this.quantite = quantite;
         this.statutCommande = statutCommande;
@@ -33,9 +55,13 @@ public class CommandeDTO {
         this.produitId = produitId;
         this.paiementId = paiementId;
         this.montantTotal = montantTotal;
+        this.produit = produit;
+        this.vendeuseId = vendeuseId;
+        this.vendeuseNom = vendeuseNom;
     }
 
-    // Getters and Setters
+    // ================== GETTERS / SETTERS ==================
+
     public Long getId() {
         return id;
     }
@@ -91,17 +117,43 @@ public class CommandeDTO {
     public void setPaiementId(Long paiementId) {
         this.paiementId = paiementId;
     }
-    
-    // Adding getMontantTotal() method
+
     public Double getMontantTotal() {
         return montantTotal;
     }
-    
+
     public void setMontantTotal(Double montantTotal) {
         this.montantTotal = montantTotal;
     }
 
-    // equals, hashCode, and toString methods
+    // ---- NEW : produit, vendeuseId, vendeuseNom ----
+
+    public ProduitDTO getProduit() {
+        return produit;
+    }
+
+    public void setProduit(ProduitDTO produit) {
+        this.produit = produit;
+    }
+
+    public Long getVendeuseId() {
+        return vendeuseId;
+    }
+
+    public void setVendeuseId(Long vendeuseId) {
+        this.vendeuseId = vendeuseId;
+    }
+
+    public String getVendeuseNom() {
+        return vendeuseNom;
+    }
+
+    public void setVendeuseNom(String vendeuseNom) {
+        this.vendeuseNom = vendeuseNom;
+    }
+
+    // ================== equals / hashCode / toString ==================
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,6 +178,9 @@ public class CommandeDTO {
                 ", produitId=" + produitId +
                 ", paiementId=" + paiementId +
                 ", montantTotal=" + montantTotal +
+                ", produit=" + produit +
+                ", vendeuseId=" + vendeuseId +
+                ", vendeuseNom='" + vendeuseNom + '\'' +
                 '}';
     }
 }
