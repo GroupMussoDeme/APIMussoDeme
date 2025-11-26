@@ -75,16 +75,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/institutions/**").permitAll()
                         .requestMatchers("/api/institutions/**").hasRole("ADMIN")
 
-                        // Le reste nécessite une auth
+                        // Le reste nécessite une auth (puis filtré par @PreAuthorize)
                         .anyRequest().authenticated()
                 )
-
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -92,7 +90,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
