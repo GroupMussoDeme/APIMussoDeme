@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -49,9 +50,32 @@ public class SecurityConfig {
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Auth ouvert
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // LECTURE des contenus (DTO JSON)
+                        .requestMatchers(HttpMethod.GET, "/api/contenus/**").permitAll()
+
+                        // LECTURE des fichiers audio/vidéo physiques (ancienne règle)
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+
+                        // ✅ LECTURE des fichiers via FileController (/api/files/**)
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
+
+                        // Gestion des contenus (admin only)
+                        .requestMatchers(HttpMethod.POST, "/api/contenus/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/contenus/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/contenus/**").hasRole("ADMIN")
+
+                        // Autres endpoints admin
                         .requestMatchers("/api/audios/**").hasRole("ADMIN")
                         .requestMatchers("/api/categories/**").hasRole("ADMIN")
+
+                        // Institutions : GET public, reste admin
+                        .requestMatchers(HttpMethod.GET, "/api/institutions/**").permitAll()
+                        .requestMatchers("/api/institutions/**").hasRole("ADMIN")
+
+                        // Le reste nécessite une auth (puis filtré par @PreAuthorize)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -66,7 +90,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

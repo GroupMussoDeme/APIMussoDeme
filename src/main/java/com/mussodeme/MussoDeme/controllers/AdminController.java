@@ -221,62 +221,30 @@ public class AdminController {
         return ResponseEntity.ok(contenus);
     }
 
-    //===================== GESTION DES INSTITUTIONS FINANCIÈRES =====================
-    /**
-     * Ajouter une institution financière
-     */
+    // ------------------- INSTITUTIONS FINANCIÈRES -------------------
+
     @PostMapping("/institutions")
-    public ResponseEntity<InstitutionFinanciereDTO> ajouterInstitution(
-            @RequestHeader("Authorization") String authHeader,
-            @Valid @RequestBody InstitutionFinanciereDTO dto) {
-        logger.info("Requête d'ajout d'institution financière");
-        
-        // Extraire l'ID de l'admin du token JWT
-        Long adminId = jwtUtils.getUserIdFromToken(authHeader.substring(7)); // "Bearer " + token
-        InstitutionFinanciereDTO created = adminService.ajouterInstitution(adminId, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<InstitutionFinanciereDTO> createInstitution(
+            @RequestBody InstitutionFinanciereDTO dto) {
+        return ResponseEntity.ok(adminService.createInstitution(dto));
     }
-    
-    /**
-     * Modifier une institution financière
-     */
-    @PutMapping("/institutions/{id}")
-    public ResponseEntity<InstitutionFinanciereDTO> modifierInstitution(
-            @PathVariable Long id,
-            @Valid @RequestBody InstitutionFinanciereDTO dto) {
-        logger.info("Requête de modification de l'institution: " + id);
-        InstitutionFinanciereDTO updated = adminService.modifierInstitution(id, dto);
-        return ResponseEntity.ok(updated);
+
+    @GetMapping("/institutions")
+    public ResponseEntity<List<InstitutionFinanciereDTO>> getAllInstitutions() {
+        return ResponseEntity.ok(adminService.getAllInstitutions());
     }
-    
-    /**
-     * Récupérer une institution par son ID
-     */
+
     @GetMapping("/institutions/{id}")
     public ResponseEntity<InstitutionFinanciereDTO> getInstitution(@PathVariable Long id) {
-        logger.info("Requête de récupération de l'institution: " + id);
-        InstitutionFinanciereDTO institution = adminService.getInstitution(id);
-        return ResponseEntity.ok(institution);
+        return ResponseEntity.ok(adminService.getInstitution(id));
     }
 
-    /**
-     * Supprimer une institution financière
-     */
     @DeleteMapping("/institutions/{id}")
-    public ResponseEntity<String> supprimerInstitution(@PathVariable Long id) {
-        logger.info("Requête de suppression de l'institution: " + id);
-        adminService.supprimerInstitution(id);
-        return ResponseEntity.ok("Institution supprimée avec succès");
-    }
-
-    /**
-     * Lister toutes les institutions financières
-     */
-    @GetMapping("/institutions")
-    public ResponseEntity<List<InstitutionFinanciereDTO>> listerInstitutions() {
-        logger.info("Requête de liste de toutes les institutions");
-        List<InstitutionFinanciereDTO> institutions = adminService.listerInstitutions();
-        return ResponseEntity.ok(institutions);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteInstitution(@PathVariable Long id) {
+        adminService.deleteInstitution(id);
+        return ResponseEntity.noContent().build();
     }
     
     //===================== GESTION DES UTILISATEURS =====================

@@ -11,6 +11,7 @@ public class Response {
     // Generic
     private int status;
     private String message;
+    private Object data;
 
     // For login/auth (si tu gères l’authentification)
     private String token;
@@ -61,6 +62,15 @@ public class Response {
     public Response() {
     }
 
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
+
+
     // Private constructor for builder pattern
     private Response(Builder builder) {
         this.status = builder.status;
@@ -92,6 +102,7 @@ public class Response {
         this.utilisateurAudios = builder.utilisateurAudios;
         this.rechercheParLocalisation = builder.rechercheParLocalisation;
         this.recherchesParLocalisation = builder.recherchesParLocalisation;
+        this.data = builder.data;
     }
 
     // Getters and Setters
@@ -362,6 +373,7 @@ public class Response {
         private List<UtilisateurAudioDTO> utilisateurAudios;
         private RechercheParLocalisationDTO rechercheParLocalisation;
         private List<RechercheParLocalisationDTO> recherchesParLocalisation;
+        private Object data;
 
         public Builder status(int status) {
             this.status = status;
@@ -532,7 +544,10 @@ public class Response {
 
         @SuppressWarnings("unchecked")
         public Builder data(Object data) {
-            // Handle different data types and assign to appropriate fields
+            // ✅ On stocke toujours l'objet brut ici, quel que soit son type
+            this.data = data;
+
+            // Puis on garde ton comportement existant pour typer automatiquement
             if (data instanceof UtilisateurDTO) {
                 this.utilisateur = (UtilisateurDTO) data;
             } else if (data instanceof List) {
@@ -586,14 +601,18 @@ public class Response {
             } else if (data instanceof Long) {
                 this.totalElements = (Long) data;
             }
+            // ⚠️ Si c’est un Map<String, Object> (cas de l’upload image),
+            // on ne fait rien de plus : il reste dans this.data et sera
+            // sérialisé tel quel sous la propriété "data".
             return this;
         }
+
 
         public Response build() {
             return new Response(this);
         }
     }
-    
+
     // Static builder method
     public static Builder builder() {
         return new Builder();

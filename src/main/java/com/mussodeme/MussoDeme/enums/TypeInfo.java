@@ -14,6 +14,9 @@ package com.mussodeme.MussoDeme.enums;
 public enum TypeInfo {
     SANTE,
     NUTRITION,
-    DROIT,
+    DROITS_FEMMES,
+    DROITS_ENFANTS,
+    CONSEILS_NOUVELLES_MAMANS,
+    PROTECTION_CONTRE_VIOLENCE,
     VIDEO_FORMATION
 }

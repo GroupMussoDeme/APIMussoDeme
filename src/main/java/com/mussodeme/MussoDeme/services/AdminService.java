@@ -525,133 +525,57 @@ public class AdminService {
         }
     }
 
-    //====================== GESTION DES INSTITUTIONS FINANCIÈRES ============================
-    
-    /**
-     * Ajouter une institution financière
-     */
-    @Transactional
-    public InstitutionFinanciereDTO ajouterInstitution(Long adminId, @Valid InstitutionFinanciereDTO dto) {
-        logger.info("Ajout d'une nouvelle institution financière: " + dto.getNom());
-        
-        // Validation
-        if (dto.getNom() == null || dto.getNom().isBlank()) {
-            throw new IllegalArgumentException("Le nom de l'institution est obligatoire");
-        }
-        
-        // Vérifier que l'admin existe
-        Admin admin = adminRepository.findById(adminId)
-                .orElseThrow(() -> {
-                    logger.warning("Admin non trouvé avec l'ID: " + adminId);
-                    return new NotFoundException("Administrateur non trouvé avec l'ID: " + adminId);
-                });
-        
-        InstitutionFinanciere institution = new InstitutionFinanciere();
-        institution.setNom(dto.getNom().trim());
-        institution.setNumeroTel(dto.getNumeroTel() != null ? dto.getNumeroTel().trim() : null);
-        institution.setDescription(dto.getDescription() != null ? dto.getDescription().trim() : null);
-        institution.setLogoUrl(dto.getLogoUrl());
+    // ------------------- INSTITUTIONS FINANCIÈRES -------------------
 
-        InstitutionFinanciere saved = institutionRepository.save(institution);
-        logger.info("Institution financière créée avec succès - ID: " + saved.getId() + ", Nom: " + saved.getNom());
-        
-        // Envoyer SMS de notification aux femmes rurales
-        List<FemmeRurale> femmes = femmeRuraleRepository.findAll();
-        for (FemmeRurale femme : femmes) {
-            smsService.envoyerSMSNouvelleInstitution(saved, femme, admin.getNom());
-        }
-        
-        dto.setId(saved.getId());
-        return dto;
+    public InstitutionFinanciereDTO createInstitution(InstitutionFinanciereDTO dto) {
+        InstitutionFinanciere inst = new InstitutionFinanciere(
+                null,
+                dto.getNom(),
+                dto.getNumeroTel(),
+                dto.getDescription(),
+                dto.getLogoUrl(),
+                dto.getMontantMin(),
+                dto.getMontantMax(),
+                dto.getSecteurActivite(),
+                dto.getTauxInteret()
+        );
+
+        InstitutionFinanciere saved = institutionRepository.save(inst);
+        return mapToDTO(saved);
     }
 
-    /**
-     * Modifier une institution financière
-     */
-    @Transactional
-    public InstitutionFinanciereDTO modifierInstitution(Long institutionId, @Valid InstitutionFinanciereDTO dto) {
-        logger.info("Modification de l'institution financière: " + institutionId);
-        
-        InstitutionFinanciere institution = institutionRepository.findById(institutionId)
-                .orElseThrow(() -> {
-                    logger.warning("Institution non trouvée avec l'ID: " + institutionId);
-                    return new NotFoundException("Institution financière non trouvée avec l'ID: " + institutionId);
-                });
-        
-        // Mise à jour des champs si fournis
-        if (dto.getNom() != null && !dto.getNom().isBlank()) {
-            institution.setNom(dto.getNom().trim());
-        }
-        
-        if (dto.getNumeroTel() != null) {
-            institution.setNumeroTel(dto.getNumeroTel().trim());
-        }
-        
-        if (dto.getDescription() != null) {
-            institution.setDescription(dto.getDescription().trim());
-        }
-        
-        if (dto.getLogoUrl() != null && !dto.getLogoUrl().isBlank()) {
-            institution.setLogoUrl(dto.getLogoUrl());
-        }
-        
-        InstitutionFinanciere updated = institutionRepository.save(institution);
-        logger.info("Institution financière " + institutionId + " modifiée avec succès");
-        
-        return modelMapper.map(updated, InstitutionFinanciereDTO.class);
-    }
-    
-    /**
-     * Supprimer une institution financière
-     */
-    @Transactional
-    public void supprimerInstitution(Long id) {
-        logger.info("Suppression de l'institution financière: " + id);
-        
-        if (!institutionRepository.existsById(id)) {
-            logger.warning("Institution non trouvée avec l'ID: " + id);
-            throw new NotFoundException("Institution financière non trouvée avec l'ID: " + id);
-        }
-        
-        institutionRepository.deleteById(id);
-        logger.info("Institution financière " + id + " supprimée avec succès");
-    }
-
-    /**
-     * Récupérer une institution par son ID
-     */
-    public InstitutionFinanciereDTO getInstitution(Long id) {
-        logger.info("Récupération de l'institution financière: " + id);
-        
-        InstitutionFinanciere institution = institutionRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warning("Institution non trouvée avec l'ID: " + id);
-                    return new NotFoundException("Institution financière non trouvée avec l'ID: " + id);
-                });
-        
-        return modelMapper.map(institution, InstitutionFinanciereDTO.class);
-    }
-    
-    /**
-     * Lister toutes les institutions financières
-     */
-    public List<InstitutionFinanciereDTO> listerInstitutions() {
-        logger.info("Récupération de la liste de toutes les institutions financières");
-        
-        List<InstitutionFinanciere> institutions = institutionRepository.findAll();
-        logger.fine(institutions.size() + " institutions trouvées");
-        
-        return institutions.stream()
-                .map(i -> new InstitutionFinanciereDTO(
-                        i.getId(),
-                        i.getNom(),
-                        i.getNumeroTel(),
-                        i.getDescription(),
-                        i.getLogoUrl()
-                ))
+    public List<InstitutionFinanciereDTO> getAllInstitutions() {
+        return institutionRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
-    
+
+    public InstitutionFinanciereDTO getInstitution(Long id) {
+        InstitutionFinanciere inst = institutionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Institution non trouvée"));
+        return mapToDTO(inst);
+    }
+
+    public void deleteInstitution(Long id) {
+        institutionRepository.deleteById(id);
+    }
+
+    private InstitutionFinanciereDTO mapToDTO(InstitutionFinanciere i) {
+        return new InstitutionFinanciereDTO(
+                i.getId(),
+                i.getNom(),
+                i.getNumeroTel(),
+                i.getDescription(),
+                i.getLogoUrl(),
+                i.getMontantMin(),
+                i.getMontantMax(),
+                i.getSecteurActivite(),
+                i.getTauxInteret()
+        );
+    }
+
+
     //====================== GESTION DES UTILISATEURS ============================
     
     /**
