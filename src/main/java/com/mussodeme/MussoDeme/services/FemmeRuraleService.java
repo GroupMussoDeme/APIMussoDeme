@@ -481,7 +481,7 @@ public class FemmeRuraleService {
 
         logger.info("Message vocal envoyé avec succès de " + expediteurId + " à " + destinataireId);
 
-        return modelMapper.map(saved, ChatVocalDTO.class);
+        return toChatVocalDTO(saved);
     }
 
     /**
@@ -499,7 +499,7 @@ public class FemmeRuraleService {
         List<ChatVocal> messages = chatVocalRepository.findMessagesBetweenUsers(femme1Id, femme2Id);
 
         return messages.stream()
-                .map(cv -> modelMapper.map(cv, ChatVocalDTO.class))
+                .map(this::toChatVocalDTO)
                 .collect(Collectors.toList());
     }
 
@@ -520,7 +520,7 @@ public class FemmeRuraleService {
 
         logger.info("Message " + messageId + " marqué comme lu");
 
-        return modelMapper.map(updated, ChatVocalDTO.class);
+        return toChatVocalDTO(updated);
     }
 
     //================== GESTION DES COOPÉRATIVES ==================
@@ -642,25 +642,6 @@ public class FemmeRuraleService {
         logger.info("Femme " + femmeId + " a quitté la coopérative '" + cooperative.getNom() + "'");
     }
 
-    /**
-     * Lister les coopératives d'une femme
-     */
-    public List<CoperativeDTO> listerMesCooperatives(Long femmeId) {
-        logger.info("Récupération des coopératives de la femme " + femmeId);
-
-        FemmeRurale femme = femmeRuraleRepository.findById(femmeId)
-                .orElseThrow(() -> new NotFoundException("Femme rurale non trouvée avec l'ID: " + femmeId));
-
-        List<Appartenance> appartenances = appartenanceRepository.findByFemmeRurale(femme);
-
-        return appartenances.stream()
-                .map(a -> modelMapper.map(a.getCoperative(), CoperativeDTO.class))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Envoyer un message vocal dans une coopérative
-     */
     @Transactional
     public ChatVocalDTO envoyerMessageVocalCooperative(Long femmeId, Long cooperativeId, String audioUrl) {
         FemmeRurale femme = femmeRuraleRepository.findById(femmeId)
@@ -669,7 +650,7 @@ public class FemmeRuraleService {
         Coperative cooperative = cooperativeRepository.findById(cooperativeId)
                 .orElseThrow(() -> new NotFoundException("Coopérative non trouvée avec l'ID: " + cooperativeId));
 
-        // Vérifier que la femme est membre de la coopérative
+        // Vérifier que la femme est membre
         if (!appartenanceRepository.existsByCoperativeIdAndFemmeRuraleId(cooperativeId, femmeId)) {
             throw new IllegalArgumentException("Vous devez être membre de cette coopérative pour envoyer un message");
         }
@@ -678,6 +659,7 @@ public class FemmeRuraleService {
         message.setAudioUrl(audioUrl);
         message.setExpediteur(femme);
         message.setCoperative(cooperative);
+        message.setDestinataire(null); // message à la coopérative
         message.setDateEnvoi(LocalDateTime.now());
         message.setLu(false);
 
@@ -685,12 +667,9 @@ public class FemmeRuraleService {
 
         logger.info("Message vocal envoyé dans la coopérative '" + cooperative.getNom() + "' par la femme " + femmeId);
 
-        return modelMapper.map(saved, ChatVocalDTO.class);
+        return toChatVocalDTO(saved);
     }
 
-    /**
-     * Récupérer les messages vocaux d'une coopérative
-     */
     public List<ChatVocalDTO> getMessagesCooperative(Long cooperativeId) {
         Coperative cooperative = cooperativeRepository.findById(cooperativeId)
                 .orElseThrow(() -> new NotFoundException("Coopérative non trouvée avec l'ID: " + cooperativeId));
@@ -698,9 +677,10 @@ public class FemmeRuraleService {
         List<ChatVocal> messages = chatVocalRepository.findByCoperativeId(cooperativeId);
 
         return messages.stream()
-                .map(cv -> modelMapper.map(cv, ChatVocalDTO.class))
+                .map(this::toChatVocalDTO)
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Compter les messages non lus d'une femme
@@ -710,6 +690,30 @@ public class FemmeRuraleService {
                 .orElseThrow(() -> new NotFoundException("Femme rurale non trouvée avec l'ID: " + femmeId));
 
         return chatVocalRepository.countUnreadMessagesByFemmeId(femmeId);
+    }
+
+    /**
+     * Lister les coopératives d'une femme rurale
+     */
+    public List<CoperativeDTO> listerMesCooperatives(Long femmeId) {
+        logger.info("Récupération des coopératives de la femme " + femmeId);
+
+        // 1. Vérifier que la femme existe
+        FemmeRurale femme = femmeRuraleRepository.findById(femmeId)
+                .orElseThrow(() ->
+                        new NotFoundException("Femme rurale non trouvée avec l'ID: " + femmeId)
+                );
+
+        // 2. Récupérer toutes les appartenances de cette femme
+        List<Appartenance> appartenances = appartenanceRepository.findByFemmeRurale(femme);
+
+        // 3. Mapper chaque coopérative liée en CoperativeDTO
+        return appartenances.stream()
+                .map(a -> {
+                    Coperative coop = a.getCoperative();
+                    return modelMapper.map(coop, CoperativeDTO.class);
+                })
+                .collect(Collectors.toList());
     }
 
     //================== GESTION DES COMMANDES ==================
@@ -1162,6 +1166,38 @@ public class FemmeRuraleService {
 
         logger.info("Partage " + partageId + " supprimé avec succès");
     }
+
+    private ChatVocalDTO toChatVocalDTO(ChatVocal entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        FemmeRurale expediteur = entity.getExpediteur();
+        FemmeRurale destinataire = entity.getDestinataire();
+        Coperative cooperative = entity.getCoperative();
+
+        return ChatVocalDTO.builder()
+                .id(entity.getId())
+                .audioUrl(entity.getAudioUrl())
+                .duree(entity.getDuree()) // si tu as ce champ dans ChatVocal, sinon enlève cette ligne
+
+                .expediteurId(expediteur != null ? expediteur.getId() : null)
+                .expediteurNom(expediteur != null ? expediteur.getNom() : null)
+                .expediteurPrenom(expediteur != null ? expediteur.getPrenom() : null)
+
+                .destinataireId(destinataire != null ? destinataire.getId() : null)
+                .destinataireNom(destinataire != null ? destinataire.getNom() : null)
+                .destinatairePrenom(destinataire != null ? destinataire.getPrenom() : null)
+
+                .cooperativeId(cooperative != null ? cooperative.getId() : null)
+                .cooperativeNom(cooperative != null ? cooperative.getNom() : null)
+
+                .dateEnvoi(entity.getDateEnvoi())
+                .lu(entity.isLu())
+                .dateLecture(entity.getDateLecture())
+                .build();
+    }
+
 
     //================== GETTERS POUR LES REPOSITORIES ==================
     // Nécessaires pour les tests et l'injection de dépendances

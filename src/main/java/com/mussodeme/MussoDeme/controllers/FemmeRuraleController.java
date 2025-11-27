@@ -570,6 +570,27 @@ public class FemmeRuraleController {
         );
     }
 
+    /**
+     * Compter les messages non lus
+     * GET /api/femmes-rurales/{femmeId}/messages/non-lus
+     */
+    @GetMapping("/{femmeId}/messages/non-lus")
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> compterMessagesNonLus(@PathVariable Long femmeId) {
+        logger.info("[API] Comptage des messages non lus pour la femme " + femmeId);
+
+        Long count = femmeRuraleService.compterMessagesNonLus(femmeId);
+
+        return ResponseEntity.ok(
+                Response.builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Messages non lus")
+                        .data(count)
+                        .build()
+        );
+    }
+
+
     //================== COMMANDES ET PAIEMENTS ==================
 
     /**

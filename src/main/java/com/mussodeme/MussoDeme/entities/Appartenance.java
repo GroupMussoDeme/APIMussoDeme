@@ -15,7 +15,7 @@ public class Appartenance {
     private LocalDateTime dateAdhesion;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "id_coperative")
+    @JoinColumn(nullable = false, name = "coperative_id")
     private Coperative coperative;
 
     @ManyToOne

@@ -20,8 +20,9 @@ public class Coperative {
 
     private int nbrMembres;
 
-    @OneToMany
+    @OneToMany(mappedBy = "coperative", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Appartenance> appartenance = new ArrayList<>();
+
 
     // Default constructor
     public Coperative() {
