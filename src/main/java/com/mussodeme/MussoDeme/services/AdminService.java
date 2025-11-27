@@ -37,6 +37,8 @@ public class AdminService {
     private static final Logger logger = Logger.getLogger(AdminService.class.getName());
     
     private static final String IMAGE_DIRECTORY = "uploads/images/";
+    private static final String AUDIO_DIRECTORY = "uploads/audios/";
+    private static final String VIDEO_DIRECTORY = "uploads/videos/";
 
     private final AdminRepository adminRepository;
     private final ContenuRepository contenuRepository;
@@ -280,6 +282,48 @@ public class AdminService {
             throw new RuntimeException("Erreur lors du téléchargement de l'image : " + e.getMessage());
         }
     }
+    
+    /**
+     * Sauvegarder un fichier (audio ou vidéo) et retourner son URL
+     */
+    public String sauvegarderFichier(MultipartFile fichier) {
+        if (fichier.isEmpty()) {
+            throw new IllegalArgumentException("Aucun fichier reçu");
+        }
+
+        try {
+            // Déterminer le répertoire de destination en fonction du type de fichier
+            String directory;
+            String contentType = fichier.getContentType();
+            
+            if (contentType != null) {
+                if (contentType.startsWith("audio/")) {
+                    directory = AUDIO_DIRECTORY;
+                } else if (contentType.startsWith("video/")) {
+                    directory = VIDEO_DIRECTORY;
+                } else {
+                    directory = IMAGE_DIRECTORY; // Par défaut pour les images
+                }
+            } else {
+                directory = IMAGE_DIRECTORY; // Par défaut si le type n'est pas spécifié
+            }
+
+            // Créer le répertoire s'il n'existe pas
+            Path dirPath = Paths.get(directory);
+            if (!Files.exists(dirPath)) {
+                Files.createDirectories(dirPath);
+            }
+            
+            String fileName = System.currentTimeMillis() + "_" + fichier.getOriginalFilename();
+            Path filePath = Paths.get(directory + fileName);
+            Files.copy(fichier.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            return "/" + directory + fileName;
+        } catch (IOException e) {
+            logger.severe("Erreur lors de la sauvegarde du fichier : " + e.getMessage());
+            throw new RuntimeException("Erreur lors de la sauvegarde du fichier : " + e.getMessage());
+        }
+    }
 
 
     //======================== GESTION DES CONTENUS =========================
@@ -304,7 +348,7 @@ public class AdminService {
                 });
 
         // Convertir la chaîne en énumération TypeCategorie
-        TypeCategorie typeCategorie = TypeCategorie.valueOf(dto.getTypeCategorie());
+        TypeCategorie typeCategorie = TypeCategorie.valueOf(dto.getTypeCategorie().trim().toUpperCase());
 
         Contenu contenu = new Contenu();
         contenu.setTitre(dto.getTitre().trim());

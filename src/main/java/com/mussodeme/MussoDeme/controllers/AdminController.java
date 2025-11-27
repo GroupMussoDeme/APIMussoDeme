@@ -5,10 +5,12 @@ import com.mussodeme.MussoDeme.dto.ContenuDTO;
 import com.mussodeme.MussoDeme.dto.InstitutionFinanciereDTO;
 import com.mussodeme.MussoDeme.dto.UpdateAdminRequest;
 import com.mussodeme.MussoDeme.dto.UtilisateurDTO;
+import com.mussodeme.MussoDeme.enums.TypeInfo;
 import com.mussodeme.MussoDeme.services.AdminService;
 import com.mussodeme.MussoDeme.security.util.JwtUtils;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -100,7 +102,7 @@ public class AdminController {
     /**
      * Télécharger une image de profil pour un admin
      */
-    @PostMapping("/profile/{id}/upload-image")
+    @PostMapping(value = "/profile/{id}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadProfileImage(@PathVariable Long id, @RequestParam("image") MultipartFile file) {
         try {
             logger.info("Requête de téléchargement d'image de profil pour l'admin: " + id);
@@ -117,15 +119,30 @@ public class AdminController {
      * Ajouter un contenu éducatif (audio ou vidéo)
      * Note: Les contenus ne peuvent pas être modifiés, seulement ajoutés ou supprimés
      */
-    @PostMapping("/contenus")
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ContenuDTO> ajouterContenu(
             @RequestHeader("Authorization") String authHeader,
-            @Valid @RequestBody ContenuDTO dto) {
+            @RequestParam("titre") String titre,
+            @RequestParam("description") String description,
+            @RequestParam("typeCategorie") String typeCategorie,
+            @RequestParam("typeInfo") String typeInfo,
+            @RequestParam("contenu") MultipartFile contenu) {
         logger.info("Requête d'ajout de contenu");
         
         // Extraire l'ID de l'admin du token JWT
         Long adminId = jwtUtils.getUserIdFromToken(authHeader.substring(7)); // "Bearer " + token
+        
+        // Sauvegarder le fichier et obtenir son URL
+        String urlContenu = adminService.sauvegarderFichier(contenu);
+        
+        ContenuDTO dto = new ContenuDTO();
         dto.setAdminId(adminId);
+        dto.setTitre(titre);
+        dto.setDescription(description);
+        dto.setTypeCategorie(typeCategorie);
+        dto.setTypeInfo(TypeInfo.valueOf(typeInfo));
+        dto.setUrlContenu(urlContenu);
+        
         ContenuDTO created = adminService.ajouterContenu(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

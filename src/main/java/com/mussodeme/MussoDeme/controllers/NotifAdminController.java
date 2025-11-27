@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/notif-admin")
-public class NotifAdminController {
+public class  NotifAdminController {
 
     private final NotificationService notificationService;
 

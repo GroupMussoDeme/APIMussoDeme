@@ -49,6 +49,18 @@ public class ContenuController {
         return ResponseEntity.ok(contenuService.listContenus());
     }
 
+    // ------------------ LIST VIDEOS ------------------
+    @GetMapping("/videos")
+    public ResponseEntity<List<ContenuDTO>> listVideos() {
+        return ResponseEntity.ok(contenuService.listVideos());
+    }
+
+    // ------------------ LIST AUDIOS ------------------
+    @GetMapping("/audios")
+    public ResponseEntity<List<ContenuDTO>> listAudios() {
+        return ResponseEntity.ok(contenuService.listAudios());
+    }
+
     // ------------------ GET BY ID ------------------
     @GetMapping("/{id}")
     public ResponseEntity<ContenuDTO> get(@PathVariable Long id) {

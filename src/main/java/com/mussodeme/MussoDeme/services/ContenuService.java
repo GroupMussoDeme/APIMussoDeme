@@ -98,6 +98,16 @@ public class ContenuService {
         return contenuRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    // ------------------ LIST VIDEOS ------------------
+    public List<ContenuDTO> listVideos() {
+        return contenuRepo.findByCategorieType(TypeCategorie.VIDEOS).stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    // ------------------ LIST AUDIOS ------------------
+    public List<ContenuDTO> listAudios() {
+        return contenuRepo.findByCategorieType(TypeCategorie.AUDIOS).stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
     // ------------------ GET BY ID ------------------
     public ContenuDTO getContenu(Long id) {
         Contenu contenu = contenuRepo.findById(id)

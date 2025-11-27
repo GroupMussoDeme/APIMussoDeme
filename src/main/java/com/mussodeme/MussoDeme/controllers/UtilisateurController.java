@@ -6,6 +6,7 @@ import com.mussodeme.MussoDeme.dto.UtilisateurDTO;
 import com.mussodeme.MussoDeme.services.UtilisateurService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -164,7 +165,7 @@ public class UtilisateurController {
     }
     
     // Upload d'image de profil
-    @PostMapping("/{id}/upload-image")
+    @PostMapping(value = "/{id}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadProfileImage(@PathVariable Long id, @RequestParam("image") MultipartFile file) {
         try {
             String result = utilisateurService.telechargerImageProfil(id, file);
