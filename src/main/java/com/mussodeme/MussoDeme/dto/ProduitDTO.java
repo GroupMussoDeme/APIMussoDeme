@@ -11,6 +11,7 @@ public class ProduitDTO {
     private String image;
     private Integer quantite;
     private Double prix;
+    private String unite;
     private TypeProduit typeProduit;       // Type de produit
     private String audioGuideUrl;           // Voice guide description product
     private Long femmeRuraleId;
@@ -92,6 +93,14 @@ public class ProduitDTO {
         this.femmeRuraleId = femmeRuraleId;
     }
 
+    public String getUnite() {
+        return unite;
+    }
+
+    public void setUnite(String unite) {
+        this.unite = unite;
+    }
+
     // equals, hashCode, and toString methods
     @Override
     public boolean equals(Object o) {
@@ -115,6 +124,7 @@ public class ProduitDTO {
                 ", image='" + image + '\'' +
                 ", quantite=" + quantite +
                 ", prix=" + prix +
+                ", unite='" + unite + '\'' +
                 ", typeProduit=" + typeProduit +
                 ", audioGuideUrl='" + audioGuideUrl + '\'' +
                 ", femmeRuraleId=" + femmeRuraleId +

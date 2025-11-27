@@ -34,6 +34,9 @@ public class Produit {
     @Column(name = "prix", nullable = false)
     private Double prix;
 
+    @Column(name = "unite", length = 30)
+    private String unite;
+
     /**
      * Type de produit pour la recherche vocale
      */
@@ -65,6 +68,7 @@ public class Produit {
                    String image,
                    Integer quantite,
                    Double prix,
+                   String unite,
                    TypeProduit typeProduit,
                    String audioGuideUrl,
                    FemmeRurale femmeRurale,
@@ -75,6 +79,7 @@ public class Produit {
         this.image = image;
         this.quantite = quantite;
         this.prix = prix;
+        this.unite = unite;
         this.typeProduit = typeProduit;
         this.audioGuideUrl = audioGuideUrl;
         this.femmeRurale = femmeRurale;
@@ -134,6 +139,14 @@ public class Produit {
 
     public void setPrix(Double prix) {
         this.prix = prix;
+    }
+
+    public String getUnite() {
+        return unite;
+    }
+
+    public void setUnite(String unite) {
+        this.unite = unite;
     }
 
     // Alias pratique pour vendeur

@@ -235,22 +235,20 @@ public class FemmeRuraleService {
         Produit produit = new Produit();
         produit.setNom(produitDTO.getNom());
         produit.setDescription(produitDTO.getDescription());
-        produit.setImage(produitDTO.getImage()); // doit contenir le fileName renvoyé par sauvegarderImageProduit
+        produit.setImage(produitDTO.getImage());
         produit.setQuantite(produitDTO.getQuantite());
         produit.setPrix(produitDTO.getPrix());
+        produit.setUnite(produitDTO.getUnite());        // ✅ ici
         produit.setTypeProduit(produitDTO.getTypeProduit());
         produit.setAudioGuideUrl(produitDTO.getAudioGuideUrl());
         produit.setFemmeRurale(femme);
 
         Produit saved = produitRepository.save(produit);
-
-        // Enregistrer dans l'historique
         historiqueService.enregistrerPublication(femme, saved);
-
-        logger.info("Produit '" + saved.getNom() + "' publié avec succès par la femme " + femmeId);
 
         return modelMapper.map(saved, ProduitDTO.class);
     }
+
 
     /**
      * Modifier un produit
@@ -302,6 +300,11 @@ public class FemmeRuraleService {
 
         if (produitDTO.getAudioGuideUrl() != null) {
             produit.setAudioGuideUrl(produitDTO.getAudioGuideUrl());
+        }
+
+        if (produitDTO.getUnite() != null && !produitDTO.getUnite().equals(produit.getUnite())) {
+            details.append(String.format("Unité: %s → %s; ", produit.getUnite(), produitDTO.getUnite()));
+            produit.setUnite(produitDTO.getUnite());         // ✅
         }
 
         Produit updated = produitRepository.save(produit);
