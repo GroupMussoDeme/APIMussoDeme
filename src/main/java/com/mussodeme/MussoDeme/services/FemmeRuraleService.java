@@ -354,6 +354,40 @@ public class FemmeRuraleService {
     }
 
     /**
+     * Commandes où la femme est ACHETEUSE
+     */
+    public List<CommandeDTO> getCommandesCommeAcheteur(Long femmeId) {
+        logger.info("Récupération des commandes (acheteur) pour la femme " + femmeId);
+
+        List<Commande> commandes = commandeRepository.findByAcheteurId(femmeId);
+
+        return commandes.stream()
+                .map(c -> modelMapper.map(c, CommandeDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Commandes où la femme est VENDEUSE (ses ventes)
+     */
+    public List<CommandeDTO> getCommandesCommeVendeur(Long femmeId) {
+        logger.info("Récupération des commandes (vendeur) pour la femme " + femmeId);
+
+        List<Commande> commandes = commandeRepository.findByProduit_FemmeRurale_Id(femmeId);
+
+        return commandes.stream()
+                .map(c -> modelMapper.map(c, CommandeDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Voir mes commandes (version acheteuse uniquement)
+     */
+    public List<CommandeDTO> voirMesCommandes(Long femmeId) {
+        return getCommandesCommeAcheteur(femmeId);
+    }
+
+
+    /**
      * Voir tous les produits (de toutes les femmes)
      */
     public List<ProduitDTO> voirTousLesProduits() {
@@ -852,13 +886,6 @@ public class FemmeRuraleService {
         return allCommandes.stream()
                 .map(this::toCommandeDto)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Alias : voir mes commandes
-     */
-    public List<CommandeDTO> voirMesCommandes(Long femmeId) {
-        return getCommandesFemmeRurale(femmeId);
     }
 
 

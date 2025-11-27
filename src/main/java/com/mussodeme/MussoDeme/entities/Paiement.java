@@ -15,6 +15,7 @@ public class Paiement {
     private LocalDateTime datePaiement;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "mode_paiement", length = 20, nullable = false)
     private ModePaiement modePaiement;
 
     private Double montant;

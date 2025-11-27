@@ -648,6 +648,27 @@ public class FemmeRuraleController {
         );
     }
 
+    /**
+     * Voir mes ventes (commandes où la femme est vendeuse)
+     * GET /api/femmes-rurales/{femmeId}/mes-ventes
+     */
+    @GetMapping("/{femmeId}/mes-ventes")
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> voirMesVentes(@PathVariable Long femmeId) {
+        logger.info("[API] Femme " + femmeId + " consulte ses ventes");
+
+        List<CommandeDTO> ventes = femmeRuraleService.getCommandesCommeVendeur(femmeId);
+
+        return ResponseEntity.ok(
+                Response.builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Mes ventes récupérées")
+                        .data(ventes)
+                        .build()
+        );
+    }
+
+
     //================== PARTAGE DE CONTENUS DANS COOPÉRATIVES ==================
 
     /**
