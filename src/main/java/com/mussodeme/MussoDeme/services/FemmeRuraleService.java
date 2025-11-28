@@ -484,6 +484,33 @@ public class FemmeRuraleService {
         return toChatVocalDTO(saved);
     }
 
+    @Transactional
+    public ChatVocalDTO envoyerMessageTexteCooperative(Long femmeId, Long cooperativeId, String texte) {
+        FemmeRurale femme = femmeRuraleRepository.findById(femmeId)
+                .orElseThrow(() -> new NotFoundException("Femme rurale non trouvée avec l'ID: " + femmeId));
+
+        Coperative cooperative = cooperativeRepository.findById(cooperativeId)
+                .orElseThrow(() -> new NotFoundException("Coopérative non trouvée avec l'ID: " + cooperativeId));
+
+        if (!appartenanceRepository.existsByCoperativeIdAndFemmeRuraleId(cooperativeId, femmeId)) {
+            throw new IllegalArgumentException("Vous devez être membre de cette coopérative pour envoyer un message");
+        }
+
+        ChatVocal message = new ChatVocal();
+        message.setExpediteur(femme);
+        message.setCoperative(cooperative);
+        message.setDestinataire(null);
+        message.setAudioUrl(null);          // 🔹 pas d'audio
+        message.setDuree(null);
+        message.setTexte(texte);            // 🔹 contenu texte
+        message.setDateEnvoi(LocalDateTime.now());
+        message.setLu(false);
+
+        ChatVocal saved = chatVocalRepository.save(message);
+        return toChatVocalDTO(saved);
+    }
+
+
     /**
      * Récupérer l'historique de chat vocal entre deux femmes
      */
@@ -715,6 +742,52 @@ public class FemmeRuraleService {
                 })
                 .collect(Collectors.toList());
     }
+
+    //================== GESTION DES AUDIOS DE COOPÉRATIVE ==================
+
+    /**
+     * Sauvegarder physiquement un audio de coopérative sur le serveur
+     * et retourner l'URL relative à stocker dans ChatVocal.audioUrl.
+     */
+    @Transactional
+    public String sauvegarderAudioCooperative(Long femmeId, MultipartFile audioFile) throws IOException {
+        logger.info("Femme " + femmeId + " upload un audio de coopérative : "
+                + (audioFile != null ? audioFile.getOriginalFilename() : "null"));
+
+        if (audioFile == null || audioFile.isEmpty()) {
+            throw new IllegalArgumentException("Le fichier audio est vide");
+        }
+
+        // Vérifier que la femme existe (cohérence métier)
+        FemmeRurale femme = femmeRuraleRepository.findById(femmeId)
+                .orElseThrow(() -> new NotFoundException("Femme rurale non trouvée avec l'ID: " + femmeId));
+
+        String originalFilename = StringUtils.cleanPath(audioFile.getOriginalFilename());
+        String extension = "";
+        int dotIndex = originalFilename.lastIndexOf('.');
+        if (dotIndex >= 0) {
+            extension = originalFilename.substring(dotIndex); // .m4a, .aac, .mp3, ...
+        }
+
+        // Nom unique basé sur l'ID de la femme + timestamp
+        String baseName = "coop_audio_" + femme.getId() + "_" + System.currentTimeMillis();
+        String fileName = baseName + extension;
+
+        // Dossier "uploads/audios" à la racine du projet
+        Path uploadsDir = Paths.get("uploads", "audios");
+        if (!Files.exists(uploadsDir)) {
+            Files.createDirectories(uploadsDir);
+        }
+
+        Path target = uploadsDir.resolve(fileName);
+        Files.copy(audioFile.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+        logger.info("Audio de coopérative sauvegardé sur le serveur : " + fileName);
+
+        // Tu peux renvoyer soit juste le nom, soit l'URL relative
+        return "/uploads/audios/" + fileName;
+    }
+
 
     //================== GESTION DES COMMANDES ==================
 

@@ -414,6 +414,31 @@ public class FemmeRuraleController {
     }
 
     /**
+     * Envoyer un message TEXTE dans une coopérative
+     * POST /api/femmes-rurales/{femmeId}/cooperatives/{cooperativeId}/messages-textes
+     */
+    @PostMapping("/{femmeId}/cooperatives/{cooperativeId}/messages-textes")
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> envoyerMessageTexteCooperative(
+            @PathVariable Long femmeId,
+            @PathVariable Long cooperativeId,
+            @RequestParam String texte) {
+
+        ChatVocalDTO message = femmeRuraleService.envoyerMessageTexteCooperative(
+                femmeId, cooperativeId, texte
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                Response.builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Message texte envoyé dans la coopérative")
+                        .data(message)
+                        .build()
+        );
+    }
+
+
+    /**
      * Récupérer l'historique de chat vocal
      * GET /api/femmes-rurales/{femme1Id}/chats/{femme2Id}
      */
@@ -589,6 +614,37 @@ public class FemmeRuraleController {
                         .build()
         );
     }
+
+    /**
+     * Upload d'un audio de coopérative (fichier)
+     * POST /api/femmes-rurales/{femmeId}/cooperatives/{cooperativeId}/audios
+     * form-data: file = <multipart audio>
+     */
+    @PostMapping(
+            value = "/{femmeId}/cooperatives/{cooperativeId}/audios",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> uploadAudioCooperative(
+            @PathVariable Long femmeId,
+            @PathVariable Long cooperativeId,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+
+        logger.info("[API] Upload audio de coopérative " + cooperativeId + " par femme " + femmeId);
+
+        // on pourrait vérifier ici que la femme est bien membre de la coopérative, si tu veux
+        String audioUrl = femmeRuraleService.sauvegarderAudioCooperative(femmeId, file);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                Response.builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Audio de coopérative uploadé avec succès")
+                        .data(audioUrl) // côté Flutter : json['data'] = "/uploads/audios/xxx.aac"
+                        .build()
+        );
+    }
+
 
 
     //================== COMMANDES ET PAIEMENTS ==================
