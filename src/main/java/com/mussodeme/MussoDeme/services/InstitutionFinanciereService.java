@@ -22,7 +22,7 @@ public class InstitutionFinanciereService {
         this.fileStorageService = fileStorageService;
     }
 
-    // ✅ CREATE + UPLOAD LOGO
+    // CREATE + UPLOAD LOGO
     public InstitutionFinanciereDTO create(InstitutionFinanciereDTO dto, MultipartFile logo) {
 
         String logoUrl = null;

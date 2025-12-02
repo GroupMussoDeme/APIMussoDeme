@@ -12,6 +12,8 @@ public class ChatVocalDTO {
     private Long expediteurId;
     private String expediteurNom;
     private String expediteurPrenom;
+
+    private String texte;
     
     // Receiver information (null for cooperative chat)
     private Long destinataireId;
@@ -34,7 +36,7 @@ public class ChatVocalDTO {
     public ChatVocalDTO(Long id, String audioUrl, String duree, Long expediteurId, String expediteurNom, 
                        String expediteurPrenom, Long destinataireId, String destinataireNom, String destinatairePrenom, 
                        Long cooperativeId, String cooperativeNom, LocalDateTime dateEnvoi, boolean lu, 
-                       LocalDateTime dateLecture) {
+                       LocalDateTime dateLecture, String texte) {
         this.id = id;
         this.audioUrl = audioUrl;
         this.duree = duree;
@@ -49,6 +51,7 @@ public class ChatVocalDTO {
         this.dateEnvoi = dateEnvoi;
         this.lu = lu;
         this.dateLecture = dateLecture;
+        this.texte = texte;
     }
 
     // Getters and Setters
@@ -164,6 +167,14 @@ public class ChatVocalDTO {
         this.dateLecture = dateLecture;
     }
 
+    public String getTexte() {
+        return texte;
+    }
+
+    public void setTexte(String texte) {
+        this.texte = texte;
+    }
+
     // equals, hashCode, and toString methods
     @Override
     public boolean equals(Object o) {
@@ -195,6 +206,7 @@ public class ChatVocalDTO {
                 ", dateEnvoi=" + dateEnvoi +
                 ", lu=" + lu +
                 ", dateLecture=" + dateLecture +
+                ", texte=" + texte +
                 '}';
     }
 
@@ -214,6 +226,7 @@ public class ChatVocalDTO {
         private LocalDateTime dateEnvoi;
         private boolean lu;
         private LocalDateTime dateLecture;
+        private String texte;
 
         public Builder id(Long id) {
             this.id = id;
@@ -285,11 +298,16 @@ public class ChatVocalDTO {
             return this;
         }
 
+        public Builder texte(String texte) {
+            this.texte = texte;
+            return this;
+        }
+
         public ChatVocalDTO build() {
             return new ChatVocalDTO(id, audioUrl, duree, expediteurId, expediteurNom, 
                                   expediteurPrenom, destinataireId, destinataireNom, 
                                   destinatairePrenom, cooperativeId, cooperativeNom, 
-                                  dateEnvoi, lu, dateLecture);
+                                  dateEnvoi, lu, dateLecture, texte);
         }
     }
 
