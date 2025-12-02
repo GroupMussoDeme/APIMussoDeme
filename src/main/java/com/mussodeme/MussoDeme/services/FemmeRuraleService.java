@@ -1269,6 +1269,7 @@ public class FemmeRuraleService {
                 .lu(entity.isLu())
                 .dateLecture(entity.getDateLecture())
                 .texte(entity.getTexte())
+                .fichierUrl(entity.getFichierUrl())
                 .build();
     }
 
@@ -1301,6 +1302,81 @@ public class FemmeRuraleService {
                 .filter(f -> !idsMembres.contains(f.getId()))
                 .map(f -> modelMapper.map(f, FemmeRuraleDTO.class))
                 .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Sauvegarder physiquement un fichier (image/pdf/…) de coopérative
+     * et retourner l'URL relative à stocker dans ChatVocal.fichierUrl.
+     */
+    @Transactional
+    public String sauvegarderFichierCooperative(Long femmeId, Long cooperativeId, MultipartFile fichier) throws IOException {
+        logger.info("Femme " + femmeId + " upload un fichier pour la coopérative " + cooperativeId + " : "
+                + (fichier != null ? fichier.getOriginalFilename() : "null"));
+
+        if (fichier == null || fichier.isEmpty()) {
+            throw new IllegalArgumentException("Le fichier est vide");
+        }
+
+        FemmeRurale femme = femmeRuraleRepository.findById(femmeId)
+                .orElseThrow(() -> new NotFoundException("Femme rurale non trouvée avec l'ID: " + femmeId));
+
+        // Tu peux aussi vérifier ici que la femme est bien membre de la coopérative, si tu veux
+
+        String originalFilename = StringUtils.cleanPath(fichier.getOriginalFilename());
+        String extension = "";
+        int dotIndex = originalFilename.lastIndexOf('.');
+        if (dotIndex >= 0) {
+            extension = originalFilename.substring(dotIndex); // .jpg, .png, .pdf, ...
+        }
+
+        String baseName = "coop_file_" + cooperativeId + "_" + femme.getId() + "_" + System.currentTimeMillis();
+        String fileName = baseName + extension;
+
+        // Dossier "uploads/files" à la racine du projet
+        Path uploadsDir = Paths.get("uploads", "files");
+        if (!Files.exists(uploadsDir)) {
+            Files.createDirectories(uploadsDir);
+        }
+
+        Path target = uploadsDir.resolve(fileName);
+        Files.copy(fichier.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+        logger.info("Fichier de coopérative sauvegardé sur le serveur : " + fileName);
+
+        // URL relative consommée par Flutter
+        return "/uploads/files/" + fileName;
+    }
+
+    @Transactional
+    public ChatVocalDTO envoyerMessageFichierCooperative(Long femmeId, Long cooperativeId, String fichierUrl) {
+        logger.info("Femme " + femmeId + " envoie un fichier dans la coopérative " + cooperativeId);
+
+        FemmeRurale femme = femmeRuraleRepository.findById(femmeId)
+                .orElseThrow(() -> new NotFoundException("Femme rurale non trouvée avec l'ID: " + femmeId));
+
+        Coperative cooperative = cooperativeRepository.findById(cooperativeId)
+                .orElseThrow(() -> new NotFoundException("Coopérative non trouvée avec l'ID: " + cooperativeId));
+
+        // Vérifier que la femme est membre
+        if (!appartenanceRepository.existsByCoperativeIdAndFemmeRuraleId(cooperativeId, femmeId)) {
+            throw new IllegalArgumentException("Vous devez être membre de cette coopérative pour envoyer un message");
+        }
+
+        ChatVocal message = new ChatVocal();
+        message.setExpediteur(femme);
+        message.setCoperative(cooperative);
+        message.setDestinataire(null);
+        message.setAudioUrl(null);
+        message.setDuree(null);
+        message.setTexte(null);
+        message.setFichierUrl(fichierUrl);
+        message.setDateEnvoi(LocalDateTime.now());
+        message.setLu(false);
+
+        ChatVocal saved = chatVocalRepository.save(message);
+
+        return toChatVocalDTO(saved);
     }
 
 

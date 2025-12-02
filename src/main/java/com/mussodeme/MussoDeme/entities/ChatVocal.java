@@ -31,6 +31,9 @@ public class ChatVocal {
 
     @Column(length = 1000)
     private String texte;
+
+    @Column(name = "fichier_url")
+    private String fichierUrl;
     
     /**
      * Femme qui envoie le message vocal
@@ -78,7 +81,7 @@ public class ChatVocal {
 
     // Constructor with all fields
     public ChatVocal(Long id, String audioUrl, String duree, FemmeRurale expediteur, FemmeRurale destinataire, 
-                    Coperative coperative, LocalDateTime dateEnvoi, boolean lu, LocalDateTime dateLecture, String texte) {
+                    Coperative coperative, LocalDateTime dateEnvoi, boolean lu, LocalDateTime dateLecture, String texte, String fichierUrl) {
         this.id = id;
         this.audioUrl = audioUrl;
         this.duree = duree;
@@ -89,6 +92,7 @@ public class ChatVocal {
         this.lu = lu;
         this.dateLecture = dateLecture;
         this.texte = texte;
+        this.fichierUrl = fichierUrl;
     }
 
     // Getters and Setters
@@ -172,6 +176,14 @@ public class ChatVocal {
         this.texte = texte;
     }
 
+    public String getFichierUrl() {
+        return fichierUrl;
+    }
+
+    public void setFichierUrl(String fichierUrl) {
+        this.fichierUrl = fichierUrl;
+    }
+
     // equals, hashCode, and toString methods
     @Override
     public boolean equals(Object o) {
@@ -199,6 +211,7 @@ public class ChatVocal {
                 ", lu=" + lu +
                 ", dateLecture=" + dateLecture +
                 ", texte=" + texte +
+                ", fichierUrl=" + fichierUrl +
                 '}';
     }
 }

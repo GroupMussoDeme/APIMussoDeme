@@ -14,6 +14,8 @@ public class ChatVocalDTO {
     private String expediteurPrenom;
 
     private String texte;
+
+    private String fichierUrl;
     
     // Receiver information (null for cooperative chat)
     private Long destinataireId;
@@ -36,7 +38,7 @@ public class ChatVocalDTO {
     public ChatVocalDTO(Long id, String audioUrl, String duree, Long expediteurId, String expediteurNom, 
                        String expediteurPrenom, Long destinataireId, String destinataireNom, String destinatairePrenom, 
                        Long cooperativeId, String cooperativeNom, LocalDateTime dateEnvoi, boolean lu, 
-                       LocalDateTime dateLecture, String texte) {
+                       LocalDateTime dateLecture, String texte, String fichierUrl) {
         this.id = id;
         this.audioUrl = audioUrl;
         this.duree = duree;
@@ -52,6 +54,7 @@ public class ChatVocalDTO {
         this.lu = lu;
         this.dateLecture = dateLecture;
         this.texte = texte;
+        this.fichierUrl = fichierUrl;
     }
 
     // Getters and Setters
@@ -175,6 +178,14 @@ public class ChatVocalDTO {
         this.texte = texte;
     }
 
+    public String getFichierUrl() {
+        return fichierUrl;
+    }
+
+    public void setFichierUrl(String fichierUrl) {
+        this.fichierUrl = fichierUrl;
+    }
+
     // equals, hashCode, and toString methods
     @Override
     public boolean equals(Object o) {
@@ -207,6 +218,7 @@ public class ChatVocalDTO {
                 ", lu=" + lu +
                 ", dateLecture=" + dateLecture +
                 ", texte=" + texte +
+                ", fichierUrl=" + fichierUrl +
                 '}';
     }
 
@@ -227,6 +239,7 @@ public class ChatVocalDTO {
         private boolean lu;
         private LocalDateTime dateLecture;
         private String texte;
+        private String fichierUrl;
 
         public Builder id(Long id) {
             this.id = id;
@@ -303,11 +316,16 @@ public class ChatVocalDTO {
             return this;
         }
 
+        public Builder fichierUrl(String fichierUrl) {
+            this.fichierUrl = fichierUrl;
+            return this;
+        }
+
         public ChatVocalDTO build() {
             return new ChatVocalDTO(id, audioUrl, duree, expediteurId, expediteurNom, 
                                   expediteurPrenom, destinataireId, destinataireNom, 
                                   destinatairePrenom, cooperativeId, cooperativeNom, 
-                                  dateEnvoi, lu, dateLecture, texte);
+                                  dateEnvoi, lu, dateLecture, texte, fichierUrl);
         }
     }
 

@@ -685,6 +685,62 @@ public class FemmeRuraleController {
         );
     }
 
+    /**
+     * Upload d'un fichier (image, pdf, ...) pour une coopérative
+     * POST /api/femmes-rurales/{femmeId}/cooperatives/{cooperativeId}/fichiers
+     * form-data: file = <multipart file>
+     */
+    @PostMapping(
+            value = "/{femmeId}/cooperatives/{cooperativeId}/fichiers",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> uploadFichierCooperative(
+            @PathVariable Long femmeId,
+            @PathVariable Long cooperativeId,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+
+        logger.info("[API] Upload fichier de coopérative " + cooperativeId + " par femme " + femmeId);
+
+        String fichierUrl = femmeRuraleService.sauvegarderFichierCooperative(femmeId, cooperativeId, file);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                Response.builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Fichier de coopérative uploadé avec succès")
+                        .data(fichierUrl) // côté Flutter: json['data'] = "/uploads/files/xxx.ext"
+                        .build()
+        );
+    }
+
+    /**
+     * Envoyer un message de type "fichier" dans une coopérative
+     * POST /api/femmes-rurales/{femmeId}/cooperatives/{cooperativeId}/messages-fichiers
+     */
+    @PostMapping("/{femmeId}/cooperatives/{cooperativeId}/messages-fichiers")
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> envoyerMessageFichierCooperative(
+            @PathVariable Long femmeId,
+            @PathVariable Long cooperativeId,
+            @RequestParam String fichierUrl) {
+
+        logger.info("[API] Femme " + femmeId + " envoie un fichier dans la coopérative " + cooperativeId);
+
+        ChatVocalDTO message = femmeRuraleService.envoyerMessageFichierCooperative(
+                femmeId, cooperativeId, fichierUrl
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                Response.builder()
+                        .statusCode(HttpStatus.CREATED.value())
+                        .message("Message fichier envoyé dans la coopérative")
+                        .data(message)
+                        .build()
+        );
+    }
+
+
 
 
 
