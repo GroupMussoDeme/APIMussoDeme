@@ -1268,8 +1268,41 @@ public class FemmeRuraleService {
                 .dateEnvoi(entity.getDateEnvoi())
                 .lu(entity.isLu())
                 .dateLecture(entity.getDateLecture())
+                .texte(entity.getTexte())
                 .build();
     }
+
+    // Dans FemmeRuraleService
+
+    public List<FemmeRuraleDTO> getMembresCooperative(Long cooperativeId) {
+        Coperative cooperative = cooperativeRepository.findById(cooperativeId)
+                .orElseThrow(() -> new NotFoundException("Coopérative non trouvée avec l'ID: " + cooperativeId));
+
+        List<FemmeRurale> membres = appartenanceRepository.findFemmeRuralesByCoperativeId(cooperativeId);
+
+        return membres.stream()
+                .map(f -> modelMapper.map(f, FemmeRuraleDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Femmes qui NE sont PAS encore membres de la coopérative
+     * (Contacts sur MussoDèmè à ajouter)
+     */
+    public List<FemmeRuraleDTO> getContactsAjoutables(Long cooperativeId) {
+        List<FemmeRurale> membres = appartenanceRepository.findFemmeRuralesByCoperativeId(cooperativeId);
+        Set<Long> idsMembres = membres.stream()
+                .map(FemmeRurale::getId)
+                .collect(Collectors.toSet());
+
+        List<FemmeRurale> toutesFemmes = femmeRuraleRepository.findAll();
+
+        return toutesFemmes.stream()
+                .filter(f -> !idsMembres.contains(f.getId()))
+                .map(f -> modelMapper.map(f, FemmeRuraleDTO.class))
+                .collect(Collectors.toList());
+    }
+
 
 
     //================== GETTERS POUR LES REPOSITORIES ==================

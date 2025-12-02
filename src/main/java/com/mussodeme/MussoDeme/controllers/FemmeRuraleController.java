@@ -645,6 +645,47 @@ public class FemmeRuraleController {
         );
     }
 
+    // Dans FemmeRuraleController
+
+    /**
+     * Membres d'une coopérative
+     * GET /api/femmes-rurales/cooperatives/{cooperativeId}/membres
+     */
+    @GetMapping("/cooperatives/{cooperativeId}/membres")
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> getMembresCooperative(@PathVariable Long cooperativeId) {
+
+        List<FemmeRuraleDTO> membres = femmeRuraleService.getMembresCooperative(cooperativeId);
+
+        return ResponseEntity.ok(
+                Response.builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message(membres.size() + " membre(s) trouvé(s)")
+                        .data(membres)
+                        .build()
+        );
+    }
+
+    /**
+     * Contacts MussoDèmè à ajouter (non membres)
+     * GET /api/femmes-rurales/cooperatives/{cooperativeId}/contacts-ajout
+     */
+    @GetMapping("/cooperatives/{cooperativeId}/contacts-ajout")
+    @PreAuthorize("hasRole('FEMME_RURALE')")
+    public ResponseEntity<Response> getContactsAjoutables(@PathVariable Long cooperativeId) {
+
+        List<FemmeRuraleDTO> contacts = femmeRuraleService.getContactsAjoutables(cooperativeId);
+
+        return ResponseEntity.ok(
+                Response.builder()
+                        .statusCode(HttpStatus.OK.value())
+                        .message(contacts.size() + " contact(s) ajoutable(s)")
+                        .data(contacts)
+                        .build()
+        );
+    }
+
+
 
 
     //================== COMMANDES ET PAIEMENTS ==================
